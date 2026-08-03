@@ -10,6 +10,8 @@ import { apiLimiter } from '@/middlewares/rateLimiter';
 import { notFound } from '@/middlewares/notFound';
 import { errorHandler } from '@/middlewares/errorHandler';
 import { logger } from '@/utils/logger';
+import authRoutes from '@/routes/auth.routes';
+import employeeRoutes from '@/routes/employee.routes';
 
 const app = express();
 connectDB();
@@ -22,7 +24,8 @@ app.use(cookieParser());
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use('/api', apiLimiter);
 
-// TODO: mount routes here, e.g. app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/employees', employeeRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

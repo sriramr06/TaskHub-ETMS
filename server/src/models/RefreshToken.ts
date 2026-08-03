@@ -10,6 +10,8 @@ export interface IRefreshToken extends Document {
   revokedByIp?: string;
   replacedByTokenHash?: string;
   createdAt: Date;
+  readonly isExpired: boolean;
+  readonly isActive: boolean;
 }
 
 const refreshTokenSchema = new Schema<IRefreshToken>(
