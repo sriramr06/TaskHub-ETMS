@@ -182,7 +182,7 @@ export const ProfilePage = () => {
         <CardBody>
           <form
             onSubmit={handleProfileSubmit(onProfileSubmit)}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
           >
             <Input
               label="First name"
@@ -204,7 +204,7 @@ export const ProfilePage = () => {
               error={profileErrors.phone?.message}
               {...registerProfile('phone')}
             />
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Button type="submit" isLoading={isProfileSubmitting}>
                 Save changes
               </Button>
@@ -218,10 +218,7 @@ export const ProfilePage = () => {
           <h2 className="text-sm font-semibold text-slate-900">Change password</h2>
         </CardHeader>
         <CardBody>
-          <form
-            onSubmit={handlePasswordSubmit(onPasswordSubmit)}
-            className="flex flex-col gap-4"
-          >
+          <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className="flex flex-col gap-4">
             <Input
               label="Current password"
               type="password"

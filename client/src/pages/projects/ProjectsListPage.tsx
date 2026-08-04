@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Pagination } from '@/components/ui/Pagination';
-import { PageSpinner } from '@/components/ui/Spinner';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { RoleGate } from '@/components/RoleGate';
@@ -62,7 +62,9 @@ export const ProjectsListPage = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateInput, unknown, CreateValues>({ resolver: zodResolver(createSchema) });
+  } = useForm<CreateInput, unknown, CreateValues>({
+    resolver: zodResolver(createSchema),
+  });
 
   const onSubmit = async (values: CreateValues) => {
     try {
@@ -81,7 +83,7 @@ export const ProjectsListPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Projects</h1>
           <p className="text-sm text-slate-500">Track initiatives across your organization.</p>
@@ -124,12 +126,12 @@ export const ProjectsListPage = () => {
         </Select>
       </div>
 
-      {isLoading && <PageSpinner />}
       {!isLoading && data?.projects.length === 0 && (
         <EmptyState title="No projects found" icon={FolderKanban} />
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {isLoading && Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         {data?.projects.map((project) => (
           <Link key={project._id} to={`/projects/${project._id}`}>
             <Card className="flex h-full flex-col gap-3 p-4 transition-shadow hover:shadow-md">
@@ -155,11 +157,11 @@ export const ProjectsListPage = () => {
       {data && <Pagination meta={data.pagination} onPageChange={setPage} />}
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New project" size="lg">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
             <Input label="Project name" error={errors.name?.message} {...register('name')} />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Textarea
               label="Description"
               error={errors.description?.message}
@@ -194,7 +196,7 @@ export const ProjectsListPage = () => {
             error={errors.deadline?.message}
             {...register('deadline')}
           />
-          <div className="col-span-2 flex justify-end gap-2">
+          <div className="sm:col-span-2 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>

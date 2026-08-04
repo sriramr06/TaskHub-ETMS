@@ -130,7 +130,7 @@ export const ProjectDetailPage = () => {
 
       <Card>
         <CardBody>
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-lg font-semibold text-slate-900">{project.name}</p>
@@ -233,11 +233,11 @@ export const ProjectDetailPage = () => {
           <h2 className="text-sm font-semibold text-slate-900">Project details</h2>
         </CardHeader>
         <CardBody>
-          <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
               <Input label="Project name" error={errors.name?.message} {...register('name')} />
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Textarea
                 label="Description"
                 error={errors.description?.message}
@@ -286,7 +286,7 @@ export const ProjectDetailPage = () => {
               error={errors.deadline?.message}
               {...register('deadline')}
             />
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Button type="submit" isLoading={isSubmitting}>
                 Save changes
               </Button>

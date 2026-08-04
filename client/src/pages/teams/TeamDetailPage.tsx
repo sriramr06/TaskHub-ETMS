@@ -113,13 +113,16 @@ export const TeamDetailPage = () => {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <Link to="/teams" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
+      <Link
+        to="/teams"
+        className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700"
+      >
         <ArrowLeft className="size-4" />
         Back to teams
       </Link>
 
       <Card>
-        <CardBody className="flex items-center justify-between">
+        <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <p className="text-lg font-semibold text-slate-900">{team.name}</p>
@@ -139,9 +142,7 @@ export const TeamDetailPage = () => {
 
       <Card>
         <CardHeader>
-          <h2 className="text-sm font-semibold text-slate-900">
-            Members ({team.members.length})
-          </h2>
+          <h2 className="text-sm font-semibold text-slate-900">Members ({team.members.length})</h2>
         </CardHeader>
         <CardBody className="flex flex-col gap-3">
           <RoleGate permission={Permission.TEAM_UPDATE}>

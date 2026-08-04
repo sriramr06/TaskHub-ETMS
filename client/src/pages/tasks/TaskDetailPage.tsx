@@ -190,22 +190,23 @@ export const TaskDetailPage = () => {
   const toggleAssignee = (userId: string) => {
     setAssigneeIds((prev) => {
       const current = prev ?? task.assignees.map((a) => a._id);
-      return current.includes(userId)
-        ? current.filter((v) => v !== userId)
-        : [...current, userId];
+      return current.includes(userId) ? current.filter((v) => v !== userId) : [...current, userId];
     });
   };
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <Link to="/tasks" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
+      <Link
+        to="/tasks"
+        className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700"
+      >
         <ArrowLeft className="size-4" />
         Back to tasks
       </Link>
 
       <Card>
         <CardBody>
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <p className="text-lg font-semibold text-slate-900">{task.title}</p>
@@ -391,7 +392,10 @@ export const TaskDetailPage = () => {
         </CardHeader>
         <CardBody className="flex flex-col gap-2">
           {task.attachments.map((att) => (
-            <div key={att._id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2">
+            <div
+              key={att._id}
+              className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2"
+            >
               <a
                 href={att.url}
                 target="_blank"
@@ -552,11 +556,11 @@ export const TaskDetailPage = () => {
           <h2 className="text-sm font-semibold text-slate-900">Task details</h2>
         </CardHeader>
         <CardBody>
-          <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
               <Input label="Title" error={errors.title?.message} {...register('title')} />
             </div>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Textarea
                 label="Description"
                 error={errors.description?.message}
@@ -603,7 +607,7 @@ export const TaskDetailPage = () => {
               error={errors.actualHours?.message}
               {...register('actualHours')}
             />
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Button type="submit" isLoading={isSubmitting}>
                 Save changes
               </Button>

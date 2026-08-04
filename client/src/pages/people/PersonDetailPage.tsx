@@ -19,7 +19,14 @@ import { PageSpinner } from '@/components/ui/Spinner';
 import { RoleGate } from '@/components/RoleGate';
 import { getErrorMessage } from '@/api/client';
 import { optionalSelect } from '@/lib/zodHelpers';
-import { EmploymentStatus, EmploymentType, Permission, UserRole, UserStatus, enumLabel } from '@/lib/constants';
+import {
+  EmploymentStatus,
+  EmploymentType,
+  Permission,
+  UserRole,
+  UserStatus,
+  enumLabel,
+} from '@/lib/constants';
 import { statusTone } from '@/lib/statusTone';
 import { useAuth } from '@/context/AuthContext';
 
@@ -195,13 +202,16 @@ export const PersonDetailPage = () => {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <Link to="/people" className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
+      <Link
+        to="/people"
+        className="flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700"
+      >
         <ArrowLeft className="size-4" />
         Back to people
       </Link>
 
       <Card>
-        <CardBody className="flex items-center justify-between">
+        <CardBody className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <Avatar name={fullName} src={user.avatar} className="size-14 text-base" />
             <div>
@@ -233,7 +243,10 @@ export const PersonDetailPage = () => {
           <h2 className="text-sm font-semibold text-slate-900">Account details</h2>
         </CardHeader>
         <CardBody>
-          <form onSubmit={handleUserSubmit(onUserSubmit)} className="grid grid-cols-2 gap-4">
+          <form
+            onSubmit={handleUserSubmit(onUserSubmit)}
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+          >
             <Input
               label="First name"
               error={userErrors.firstName?.message}
@@ -264,7 +277,7 @@ export const PersonDetailPage = () => {
                 </option>
               ))}
             </Select>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Button type="submit" isLoading={isUserSubmitting}>
                 Save changes
               </Button>
@@ -291,7 +304,7 @@ export const PersonDetailPage = () => {
           <CardBody>
             <form
               onSubmit={handleEmployeeSubmit(onEmployeeSubmit)}
-              className="grid grid-cols-2 gap-4"
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2"
             >
               <Input
                 label="Department"
@@ -336,7 +349,7 @@ export const PersonDetailPage = () => {
                 error={employeeErrors.skills?.message}
                 {...registerEmployee('skills')}
               />
-              <div className="col-span-2">
+              <div className="sm:col-span-2">
                 <Button type="submit" isLoading={isEmployeeSubmitting}>
                   Save changes
                 </Button>
@@ -363,10 +376,13 @@ export const PersonDetailPage = () => {
             </CardHeader>
             <CardBody>
               <p className="mb-4 text-sm text-slate-500">
-                This account isn&apos;t linked to an employee record yet. Fill this in to track
-                {' '}{fullName}&apos;s department, designation, and employment status.
+                This account isn&apos;t linked to an employee record yet. Fill this in to track{' '}
+                {fullName}&apos;s department, designation, and employment status.
               </p>
-              <form onSubmit={handleLinkSubmit(onLinkSubmit)} className="grid grid-cols-2 gap-4">
+              <form
+                onSubmit={handleLinkSubmit(onLinkSubmit)}
+                className="grid grid-cols-1 gap-4 sm:grid-cols-2"
+              >
                 <Input
                   label="Department"
                   error={linkErrors.department?.message}
@@ -407,7 +423,7 @@ export const PersonDetailPage = () => {
                   error={linkErrors.joiningDate?.message}
                   {...registerLink('joiningDate')}
                 />
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <Button type="submit" isLoading={isLinkSubmitting}>
                     Add employment details
                   </Button>

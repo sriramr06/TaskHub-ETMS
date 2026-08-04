@@ -69,10 +69,9 @@ export const updateTeamMemberRole = async (
   userId: string,
   role: string,
 ): Promise<Team> => {
-  const { data } = await api.patch<ApiResponse<{ team: Team }>>(
-    `/teams/${id}/members/${userId}`,
-    { role },
-  );
+  const { data } = await api.patch<ApiResponse<{ team: Team }>>(`/teams/${id}/members/${userId}`, {
+    role,
+  });
   return data.data!.team;
 };
 

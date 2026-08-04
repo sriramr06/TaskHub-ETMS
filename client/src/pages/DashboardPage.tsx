@@ -57,10 +57,7 @@ export const DashboardPage = () => {
         <Card>
           <CardHeader>
             <h2 className="text-sm font-semibold text-slate-900">My projects</h2>
-            <Link
-              to="/projects"
-              className="text-xs font-medium text-teal-600 hover:text-teal-500"
-            >
+            <Link to="/projects" className="text-xs font-medium text-teal-600 hover:text-teal-500">
               View all
             </Link>
           </CardHeader>

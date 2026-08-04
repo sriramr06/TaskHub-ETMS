@@ -17,11 +17,7 @@ const initials = (name: string): string =>
 export const Avatar = ({ name, src, className }: AvatarProps) => {
   if (src) {
     return (
-      <img
-        src={src}
-        alt={name}
-        className={cn('size-8 rounded-full object-cover', className)}
-      />
+      <img src={src} alt={name} className={cn('size-8 rounded-full object-cover', className)} />
     );
   }
 

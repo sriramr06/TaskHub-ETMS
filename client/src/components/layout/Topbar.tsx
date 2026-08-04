@@ -37,9 +37,7 @@ export const Topbar = ({ onOpenMenu }: TopbarProps) => {
           <Menu className="size-5" />
         </button>
         <div>
-          <p className="text-sm font-semibold text-slate-900">
-            Welcome back, {user.firstName}
-          </p>
+          <p className="text-sm font-semibold text-slate-900">Welcome back, {user.firstName}</p>
           <p className="hidden text-xs text-slate-500 sm:block">{enumLabel(user.role)}</p>
         </div>
       </div>

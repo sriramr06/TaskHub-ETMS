@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Pagination } from '@/components/ui/Pagination';
-import { PageSpinner } from '@/components/ui/Spinner';
+import { CardSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { RoleGate } from '@/components/RoleGate';
@@ -43,7 +43,12 @@ export const TeamsListPage = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['teams', { page, search, status }],
     queryFn: () =>
-      teamsApi.listTeams({ page, limit: 20, search: search || undefined, status: status || undefined }),
+      teamsApi.listTeams({
+        page,
+        limit: 20,
+        search: search || undefined,
+        status: status || undefined,
+      }),
     placeholderData: (prev) => prev,
   });
 
@@ -68,7 +73,7 @@ export const TeamsListPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Teams</h1>
           <p className="text-sm text-slate-500">Organize people into teams.</p>
@@ -111,12 +116,12 @@ export const TeamsListPage = () => {
         </Select>
       </div>
 
-      {isLoading && <PageSpinner />}
       {!isLoading && data?.teams.length === 0 && (
         <EmptyState title="No teams found" icon={UsersRound} />
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {isLoading && Array.from({ length: 6 }).map((_, i) => <CardSkeleton key={i} />)}
         {data?.teams.map((team) => (
           <Link key={team._id} to={`/teams/${team._id}`}>
             <Card className="h-full p-4 transition-shadow hover:shadow-md">
@@ -152,7 +157,11 @@ export const TeamsListPage = () => {
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Create team">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <Input label="Team name" error={errors.name?.message} {...register('name')} />
-          <Textarea label="Description" error={errors.description?.message} {...register('description')} />
+          <Textarea
+            label="Description"
+            error={errors.description?.message}
+            {...register('description')}
+          />
           <Select label="Team lead" error={errors.teamLead?.message} {...register('teamLead')}>
             <option value="">Select a team lead</option>
             {users.map((u) => (

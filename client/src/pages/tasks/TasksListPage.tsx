@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
-import { PageSpinner } from '@/components/ui/Spinner';
+import { KanbanCardSkeleton } from '@/components/ui/Skeleton';
 import { Modal } from '@/components/ui/Modal';
 import { RoleGate } from '@/components/RoleGate';
 import { useProjectsOptions } from '@/hooks/useProjectsOptions';
@@ -56,7 +56,10 @@ const TaskCard = ({ task }: { task: Task }) => {
 
   return (
     <Card className="flex flex-col gap-2 p-3">
-      <Link to={`/tasks/${task._id}`} className="text-sm font-medium text-slate-800 hover:text-teal-600">
+      <Link
+        to={`/tasks/${task._id}`}
+        className="text-sm font-medium text-slate-800 hover:text-teal-600"
+      >
         {task.title}
       </Link>
       <p className="text-xs text-slate-500">{task.project.name}</p>
@@ -107,7 +110,9 @@ export const TasksListPage = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateInput, unknown, CreateValues>({ resolver: zodResolver(createSchema) });
+  } = useForm<CreateInput, unknown, CreateValues>({
+    resolver: zodResolver(createSchema),
+  });
 
   const onSubmit = async (values: CreateValues) => {
     try {
@@ -121,11 +126,12 @@ export const TasksListPage = () => {
     }
   };
 
-  const tasksByStatus = (status: TaskStatus) => data?.tasks.filter((t) => t.status === status) ?? [];
+  const tasksByStatus = (status: TaskStatus) =>
+    data?.tasks.filter((t) => t.status === status) ?? [];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">Tasks</h1>
           <p className="text-sm text-slate-500">Board view of all work in progress.</p>
@@ -151,34 +157,32 @@ export const TasksListPage = () => {
         ))}
       </Select>
 
-      {isLoading && <PageSpinner />}
-
-      {!isLoading && (
-        <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
-          {COLUMNS.map((status) => (
-            <div key={status} className="flex min-w-[240px] flex-col gap-3">
-              <div className="flex items-center justify-between px-1">
-                <h2 className="text-xs font-semibold uppercase text-slate-500">
-                  {enumLabel(status)}
-                </h2>
-                <span className="text-xs text-slate-400">{tasksByStatus(status).length}</span>
-              </div>
-              <div className="flex flex-col gap-2">
-                {tasksByStatus(status).map((task) => (
-                  <TaskCard key={task._id} task={task} />
-                ))}
-              </div>
+      <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
+        {COLUMNS.map((status) => (
+          <div key={status} className="flex min-w-[240px] flex-col gap-3">
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xs font-semibold uppercase text-slate-500">
+                {enumLabel(status)}
+              </h2>
+              <span className="text-xs text-slate-400">
+                {isLoading ? '' : tasksByStatus(status).length}
+              </span>
             </div>
-          ))}
-        </div>
-      )}
+            <div className="flex flex-col gap-2">
+              {isLoading && Array.from({ length: 2 }).map((_, i) => <KanbanCardSkeleton key={i} />)}
+              {!isLoading &&
+                tasksByStatus(status).map((task) => <TaskCard key={task._id} task={task} />)}
+            </div>
+          </div>
+        ))}
+      </div>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="New task" size="lg">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
-          <div className="col-span-2">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2">
             <Input label="Title" error={errors.title?.message} {...register('title')} />
           </div>
-          <div className="col-span-2">
+          <div className="sm:col-span-2">
             <Textarea
               label="Description"
               error={errors.description?.message}
@@ -220,7 +224,7 @@ export const TasksListPage = () => {
             error={errors.estimatedHours?.message}
             {...register('estimatedHours')}
           />
-          <div className="col-span-2 flex justify-end gap-2">
+          <div className="sm:col-span-2 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>

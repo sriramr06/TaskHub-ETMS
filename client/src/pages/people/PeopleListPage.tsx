@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Pagination } from '@/components/ui/Pagination';
-import { PageSpinner } from '@/components/ui/Spinner';
+import { TableRowSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { RoleGate } from '@/components/RoleGate';
@@ -89,7 +89,9 @@ export const PeopleListPage = () => {
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateInput, unknown, CreateValues>({ resolver: zodResolver(createSchema) });
+  } = useForm<CreateInput, unknown, CreateValues>({
+    resolver: zodResolver(createSchema),
+  });
 
   const onSubmit = async (values: CreateValues) => {
     try {
@@ -108,7 +110,7 @@ export const PeopleListPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-slate-900">People</h1>
           <p className="text-sm text-slate-500">Manage accounts and employment records.</p>
@@ -167,7 +169,26 @@ export const PeopleListPage = () => {
       </div>
 
       <Card>
-        {isLoading && <PageSpinner />}
+        {isLoading && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-slate-100 text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Person</th>
+                  <th className="px-4 py-3 font-medium">Role</th>
+                  <th className="px-4 py-3 font-medium">Department</th>
+                  <th className="px-4 py-3 font-medium">Designation</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRowSkeleton key={i} columns={5} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         {!isLoading && data?.users.length === 0 && (
           <EmptyState title="No people found" description="Try adjusting your filters." />
         )}
@@ -204,9 +225,7 @@ export const PeopleListPage = () => {
                           <Badge tone={statusTone(u.role)}>{enumLabel(u.role)}</Badge>
                         </td>
                         <td className="px-4 py-3 text-slate-700">{employee?.department ?? '—'}</td>
-                        <td className="px-4 py-3 text-slate-700">
-                          {employee?.designation ?? '—'}
-                        </td>
+                        <td className="px-4 py-3 text-slate-700">{employee?.designation ?? '—'}</td>
                         <td className="px-4 py-3">
                           <Badge tone={statusTone(u.status)}>{enumLabel(u.status)}</Badge>
                         </td>
@@ -222,7 +241,7 @@ export const PeopleListPage = () => {
       </Card>
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add person" size="lg">
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label="Email" type="email" error={errors.email?.message} {...register('email')} />
           <Input
             label="Temporary password"
@@ -230,11 +249,7 @@ export const PeopleListPage = () => {
             error={errors.password?.message}
             {...register('password')}
           />
-          <Input
-            label="First name"
-            error={errors.firstName?.message}
-            {...register('firstName')}
-          />
+          <Input label="First name" error={errors.firstName?.message} {...register('firstName')} />
           <Input label="Last name" error={errors.lastName?.message} {...register('lastName')} />
           <Input label="Phone" error={errors.phone?.message} {...register('phone')} />
           <Select label="Role" error={errors.role?.message} {...register('role')}>
@@ -285,7 +300,7 @@ export const PeopleListPage = () => {
             error={errors.joiningDate?.message}
             {...register('joiningDate')}
           />
-          <div className="col-span-2 flex justify-end gap-2">
+          <div className="sm:col-span-2 flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>

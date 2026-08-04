@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { getErrorMessage } from '@/api/client';
+import { UserRole, enumLabel } from '@/lib/constants';
 
 const schema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -16,11 +17,24 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
+// Matches server/src/scripts/seed.ts — run `npm run seed` in server/ to
+// create these. Dev-only: this section never renders in a production
+// build (import.meta.env.DEV is stripped at build time).
+const DEMO_PASSWORD = 'Demo1234!';
+const DEMO_ACCOUNTS: { email: string; role: UserRole }[] = [
+  { email: 'demo-admin@taskhub.local', role: UserRole.ADMIN },
+  { email: 'demo-manager@taskhub.local', role: UserRole.MANAGER },
+  { email: 'demo-teamlead@taskhub.local', role: UserRole.TEAMLEAD },
+  { email: 'demo-member@taskhub.local', role: UserRole.MEMBER },
+  { email: 'demo-guest@taskhub.local', role: UserRole.GUEST },
+];
+
 export const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [submitting, setSubmitting] = useState(false);
+  const [quickLoginRole, setQuickLoginRole] = useState<UserRole | null>(null);
 
   const {
     register,
@@ -28,16 +42,34 @@ export const LoginPage = () => {
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
+  const goToDestination = () => {
+    const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/';
+    navigate(from, { replace: true });
+  };
+
   const onSubmit = async (values: FormValues) => {
     setSubmitting(true);
     try {
       await login(values.email, values.password);
-      const from = (location.state as { from?: { pathname: string } })?.from?.pathname ?? '/';
-      navigate(from, { replace: true });
+      goToDestination();
     } catch (error) {
       toast.error(getErrorMessage(error));
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const onQuickLogin = async (account: { email: string; role: UserRole }) => {
+    setQuickLoginRole(account.role);
+    try {
+      await login(account.email, DEMO_PASSWORD);
+      goToDestination();
+    } catch (error) {
+      toast.error(
+        `${getErrorMessage(error)} Run "npm run seed" in server/ to create the demo accounts.`,
+      );
+    } finally {
+      setQuickLoginRole(null);
     }
   };
 
@@ -78,6 +110,30 @@ export const LoginPage = () => {
             Register
           </Link>
         </p>
+
+        {import.meta.env.DEV && (
+          <div className="mt-6 border-t border-slate-100 pt-6">
+            <p className="mb-3 text-center text-xs font-medium uppercase tracking-wide text-slate-400">
+              Dev quick login
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((account) => (
+                <Button
+                  key={account.role}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  isLoading={quickLoginRole === account.role}
+                  disabled={quickLoginRole !== null && quickLoginRole !== account.role}
+                  onClick={() => onQuickLogin(account)}
+                  className="justify-center"
+                >
+                  {enumLabel(account.role)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

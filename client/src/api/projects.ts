@@ -64,10 +64,7 @@ export const updateProject = async (
   id: string,
   payload: UpdateProjectPayload,
 ): Promise<Project> => {
-  const { data } = await api.patch<ApiResponse<{ project: Project }>>(
-    `/projects/${id}`,
-    payload,
-  );
+  const { data } = await api.patch<ApiResponse<{ project: Project }>>(`/projects/${id}`, payload);
   return data.data!.project;
 };
 
@@ -76,10 +73,9 @@ export const deleteProject = async (id: string): Promise<void> => {
 };
 
 export const addProjectMember = async (id: string, user: string): Promise<Project> => {
-  const { data } = await api.post<ApiResponse<{ project: Project }>>(
-    `/projects/${id}/members`,
-    { user },
-  );
+  const { data } = await api.post<ApiResponse<{ project: Project }>>(`/projects/${id}/members`, {
+    user,
+  });
   return data.data!.project;
 };
 
