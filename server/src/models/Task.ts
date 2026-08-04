@@ -2,11 +2,13 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 import { TaskStatus, TaskPriority, TaskLabel } from '@/constants/enums/task';
 
 export interface IChecklistItem {
+  _id: Types.ObjectId;
   title: string;
   completed: boolean;
 }
 
 export interface IAttachment {
+  _id: Types.ObjectId;
   url: string;
   publicId: string;
   name: string;
@@ -43,24 +45,18 @@ export interface ITask extends Document {
   updatedAt: Date;
 }
 
-const checklistItemSchema = new Schema<IChecklistItem>(
-  {
-    title: { type: String, required: true, trim: true },
-    completed: { type: Boolean, default: false },
-  },
-  { _id: false },
-);
+const checklistItemSchema = new Schema<IChecklistItem>({
+  title: { type: String, required: true, trim: true },
+  completed: { type: Boolean, default: false },
+});
 
-const attachmentSchema = new Schema<IAttachment>(
-  {
-    url: { type: String, required: true },
-    publicId: { type: String, required: true },
-    name: { type: String, required: true },
-    uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    uploadedAt: { type: Date, default: Date.now },
-  },
-  { _id: false },
-);
+const attachmentSchema = new Schema<IAttachment>({
+  url: { type: String, required: true },
+  publicId: { type: String, required: true },
+  name: { type: String, required: true },
+  uploadedBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  uploadedAt: { type: Date, default: Date.now },
+});
 
 const commentSchema = new Schema<IComment>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },

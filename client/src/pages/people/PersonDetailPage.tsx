@@ -18,6 +18,7 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { PageSpinner } from '@/components/ui/Spinner';
 import { RoleGate } from '@/components/RoleGate';
 import { getErrorMessage } from '@/api/client';
+import { optionalSelect } from '@/lib/zodHelpers';
 import { EmploymentStatus, EmploymentType, Permission, UserRole, UserStatus, enumLabel } from '@/lib/constants';
 import { statusTone } from '@/lib/statusTone';
 import { useAuth } from '@/context/AuthContext';
@@ -43,6 +44,17 @@ const employeeSchema = z.object({
 });
 
 type EmployeeFormValues = z.infer<typeof employeeSchema>;
+
+const linkEmployeeSchema = z.object({
+  department: z.string().min(1, 'Department is required'),
+  designation: z.string().min(1, 'Designation is required'),
+  employmentType: optionalSelect(z.nativeEnum(EmploymentType)),
+  employmentStatus: optionalSelect(z.nativeEnum(EmploymentStatus)),
+  joiningDate: z.string().min(1, 'Joining date is required'),
+});
+
+type LinkEmployeeInput = z.input<typeof linkEmployeeSchema>;
+type LinkEmployeeValues = z.output<typeof linkEmployeeSchema>;
 
 export const PersonDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -83,6 +95,14 @@ export const PersonDetailPage = () => {
           status: user.status,
         }
       : undefined,
+  });
+
+  const {
+    register: registerLink,
+    handleSubmit: handleLinkSubmit,
+    formState: { errors: linkErrors, isSubmitting: isLinkSubmitting },
+  } = useForm<LinkEmployeeInput, unknown, LinkEmployeeValues>({
+    resolver: zodResolver(linkEmployeeSchema),
   });
 
   const {
@@ -134,6 +154,16 @@ export const PersonDetailPage = () => {
       await usersApi.updateUser(id!, values);
       await invalidateAll();
       toast.success('Person updated.');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
+  const onLinkSubmit = async (values: LinkEmployeeValues) => {
+    try {
+      await employeesApi.linkEmployee({ ...values, user: id! });
+      await invalidateAll();
+      toast.success('Employee record created.');
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -315,13 +345,77 @@ export const PersonDetailPage = () => {
           </CardBody>
         </Card>
       ) : (
-        <Card>
-          <CardBody>
-            <p className="text-sm text-slate-500">
-              This account isn&apos;t linked to an employee record.
-            </p>
-          </CardBody>
-        </Card>
+        <RoleGate
+          permission={Permission.USER_CREATE}
+          fallback={
+            <Card>
+              <CardBody>
+                <p className="text-sm text-slate-500">
+                  This account isn&apos;t linked to an employee record.
+                </p>
+              </CardBody>
+            </Card>
+          }
+        >
+          <Card>
+            <CardHeader>
+              <h2 className="text-sm font-semibold text-slate-900">Add employment details</h2>
+            </CardHeader>
+            <CardBody>
+              <p className="mb-4 text-sm text-slate-500">
+                This account isn&apos;t linked to an employee record yet. Fill this in to track
+                {' '}{fullName}&apos;s department, designation, and employment status.
+              </p>
+              <form onSubmit={handleLinkSubmit(onLinkSubmit)} className="grid grid-cols-2 gap-4">
+                <Input
+                  label="Department"
+                  error={linkErrors.department?.message}
+                  {...registerLink('department')}
+                />
+                <Input
+                  label="Designation"
+                  error={linkErrors.designation?.message}
+                  {...registerLink('designation')}
+                />
+                <Select
+                  label="Employment type"
+                  error={linkErrors.employmentType?.message}
+                  {...registerLink('employmentType')}
+                >
+                  <option value="">Default (full-time)</option>
+                  {Object.values(EmploymentType).map((t) => (
+                    <option key={t} value={t}>
+                      {enumLabel(t)}
+                    </option>
+                  ))}
+                </Select>
+                <Select
+                  label="Employment status"
+                  error={linkErrors.employmentStatus?.message}
+                  {...registerLink('employmentStatus')}
+                >
+                  <option value="">Default (probation)</option>
+                  {Object.values(EmploymentStatus).map((s) => (
+                    <option key={s} value={s}>
+                      {enumLabel(s)}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  label="Joining date"
+                  type="date"
+                  error={linkErrors.joiningDate?.message}
+                  {...registerLink('joiningDate')}
+                />
+                <div className="col-span-2">
+                  <Button type="submit" isLoading={isLinkSubmitting}>
+                    Add employment details
+                  </Button>
+                </div>
+              </form>
+            </CardBody>
+          </Card>
+        </RoleGate>
       )}
 
       <ConfirmDialog

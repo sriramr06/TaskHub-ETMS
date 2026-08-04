@@ -76,6 +76,13 @@ export const addCommentSchema = z.object({
   }),
 });
 
+export const updateCommentSchema = z.object({
+  params: z.object({ id: objectIdSchema, commentId: objectIdSchema }),
+  body: z.object({
+    text: z.string().trim().min(1, 'Comment text is required'),
+  }),
+});
+
 export const commentParamSchema = z.object({
   params: z.object({ id: objectIdSchema, commentId: objectIdSchema }),
 });

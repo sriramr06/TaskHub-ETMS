@@ -108,6 +108,14 @@ export const addComment = async (id: string, text: string): Promise<Task> => {
   return data.data!.task;
 };
 
+export const updateComment = async (id: string, commentId: string, text: string): Promise<Task> => {
+  const { data } = await api.patch<ApiResponse<{ task: Task }>>(
+    `/tasks/${id}/comments/${commentId}`,
+    { text },
+  );
+  return data.data!.task;
+};
+
 export const removeComment = async (id: string, commentId: string): Promise<void> => {
   await api.delete(`/tasks/${id}/comments/${commentId}`);
 };

@@ -5,11 +5,13 @@ import { validate } from '@/middlewares/validate';
 import { Permission } from '@/constants/enums/permissions';
 import {
   createEmployeeSchema,
+  linkEmployeeSchema,
   updateEmployeeSchema,
   employeeIdParamSchema,
 } from '@/validators/employee.validator';
 import {
   createEmployee,
+  linkEmployee,
   getEmployees,
   getMyProfile,
   getEmployeeById,
@@ -27,6 +29,12 @@ router.post(
   requirePermission(Permission.USER_CREATE),
   validate(createEmployeeSchema),
   createEmployee,
+);
+router.post(
+  '/link',
+  requirePermission(Permission.USER_CREATE),
+  validate(linkEmployeeSchema),
+  linkEmployee,
 );
 router.get('/', requirePermission(Permission.USER_READ), getEmployees);
 router.get(

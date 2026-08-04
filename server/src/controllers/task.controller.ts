@@ -299,6 +299,31 @@ export const addComment = asyncHandler(async (req: Request, res: Response) => {
   res.status(201).json(new ApiResponse(201, 'Comment added successfully.', { task }));
 });
 
+export const updateComment = asyncHandler(async (req: Request, res: Response) => {
+  const { text } = req.body;
+
+  const existing = await Task.findOne(
+    { _id: req.params.id, 'comments._id': req.params.commentId },
+    { comments: { $elemMatch: { _id: req.params.commentId } } },
+  );
+
+  if (!existing || existing.comments.length === 0) {
+    throw new AppError('Task or comment not found.', 404);
+  }
+
+  if (existing.comments[0]?.user.toString() !== req.user?.id) {
+    throw new AppError('You can only edit your own comments.', 403);
+  }
+
+  const task = await Task.findOneAndUpdate(
+    { _id: req.params.id, 'comments._id': req.params.commentId },
+    { $set: { 'comments.$.text': text } },
+    { new: true, runValidators: true },
+  ).populate(TASK_POPULATE);
+
+  res.status(200).json(new ApiResponse(200, 'Comment updated successfully.', { task }));
+});
+
 export const removeComment = asyncHandler(async (req: Request, res: Response) => {
   const task = await Task.findOne(
     { _id: req.params.id, 'comments._id': req.params.commentId },

@@ -70,6 +70,50 @@ export const createEmployee = asyncHandler(async (req: Request, res: Response) =
   res.status(201).json(new ApiResponse(201, 'Employee created successfully.', { employee }));
 });
 
+export const linkEmployee = asyncHandler(async (req: Request, res: Response) => {
+  const {
+    user: userId,
+    department,
+    designation,
+    employmentType,
+    employmentStatus,
+    reportingManager,
+    joiningDate,
+    dateOfBirth,
+    address,
+    emergencyContact,
+    skills,
+  } = req.body;
+
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError('User not found.', 404);
+  }
+
+  const existingEmployee = await Employee.exists({ user: userId });
+  if (existingEmployee) {
+    throw new AppError('This user already has an employee record.', 409);
+  }
+
+  const employee = await Employee.create({
+    user: userId,
+    department,
+    designation,
+    employmentType,
+    employmentStatus,
+    reportingManager,
+    joiningDate,
+    dateOfBirth,
+    address,
+    emergencyContact,
+    skills,
+  });
+
+  await employee.populate('user', '-password');
+
+  res.status(201).json(new ApiResponse(201, 'Employee record created successfully.', { employee }));
+});
+
 export const getEmployees = asyncHandler(async (req: Request, res: Response) => {
   const { page, limit, skip } = parsePagination(req.query);
   const { department, employmentStatus, search } = req.query as Record<string, string | undefined>;

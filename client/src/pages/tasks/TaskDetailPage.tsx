@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, Paperclip, Plus, Send, Trash2, X } from 'lucide-react';
+import { ArrowLeft, Check, Paperclip, Pencil, Plus, Send, Trash2, X } from 'lucide-react';
 import * as tasksApi from '@/api/tasks';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -49,6 +49,10 @@ export const TaskDetailPage = () => {
   const [checklistTitle, setChecklistTitle] = useState('');
   const [commentText, setCommentText] = useState('');
   const [assigneeIds, setAssigneeIds] = useState<string[] | null>(null);
+  const [editingChecklistId, setEditingChecklistId] = useState<string | null>(null);
+  const [editingChecklistTitle, setEditingChecklistTitle] = useState('');
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingCommentText, setEditingCommentText] = useState('');
 
   const { data: task, isLoading } = useQuery({
     queryKey: ['tasks', id],
@@ -123,6 +127,16 @@ export const TaskDetailPage = () => {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
+  const renameChecklistMutation = useMutation({
+    mutationFn: ({ itemId, title }: { itemId: string; title: string }) =>
+      tasksApi.updateChecklistItem(id!, itemId, { title }),
+    onSuccess: async () => {
+      setEditingChecklistId(null);
+      await invalidate();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
   const removeChecklistMutation = useMutation({
     mutationFn: (itemId: string) => tasksApi.removeChecklistItem(id!, itemId),
     onSuccess: invalidate,
@@ -133,6 +147,16 @@ export const TaskDetailPage = () => {
     mutationFn: (text: string) => tasksApi.addComment(id!, text),
     onSuccess: async () => {
       setCommentText('');
+      await invalidate();
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+
+  const updateCommentMutation = useMutation({
+    mutationFn: ({ commentId, text }: { commentId: string; text: string }) =>
+      tasksApi.updateComment(id!, commentId, text),
+    onSuccess: async () => {
+      setEditingCommentId(null);
       await invalidate();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -263,34 +287,81 @@ export const TaskDetailPage = () => {
           </h2>
         </CardHeader>
         <CardBody className="flex flex-col gap-2">
-          {task.checklist.map((item) => (
-            <div key={item._id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={item.completed}
-                onChange={(e) =>
-                  toggleChecklistMutation.mutate({ itemId: item._id, completed: e.target.checked })
-                }
-              />
-              <span
-                className={cn(
-                  'flex-1 text-sm text-slate-700',
-                  item.completed && 'text-slate-400 line-through',
-                )}
-              >
-                {item.title}
-              </span>
-              <RoleGate permission={Permission.TASK_EDIT}>
+          {task.checklist.map((item) =>
+            editingChecklistId === item._id ? (
+              <div key={item._id} className="flex items-center gap-2">
+                <Input
+                  autoFocus
+                  value={editingChecklistTitle}
+                  onChange={(e) => setEditingChecklistTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setEditingChecklistId(null);
+                  }}
+                  className="flex-1 py-1"
+                />
                 <button
                   type="button"
-                  onClick={() => removeChecklistMutation.mutate(item._id)}
-                  className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                  disabled={!editingChecklistTitle.trim()}
+                  onClick={() =>
+                    renameChecklistMutation.mutate({
+                      itemId: item._id,
+                      title: editingChecklistTitle.trim(),
+                    })
+                  }
+                  className="rounded p-1 text-teal-600 hover:bg-teal-50 disabled:opacity-50"
                 >
-                  <X className="size-3.5" />
+                  <Check className="size-4" />
                 </button>
-              </RoleGate>
-            </div>
-          ))}
+                <button
+                  type="button"
+                  onClick={() => setEditingChecklistId(null)}
+                  className="rounded p-1 text-slate-400 hover:bg-slate-100"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            ) : (
+              <div key={item._id} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={item.completed}
+                  onChange={(e) =>
+                    toggleChecklistMutation.mutate({
+                      itemId: item._id,
+                      completed: e.target.checked,
+                    })
+                  }
+                />
+                <span
+                  className={cn(
+                    'flex-1 text-sm text-slate-700',
+                    item.completed && 'text-slate-400 line-through',
+                  )}
+                >
+                  {item.title}
+                </span>
+                <RoleGate permission={Permission.TASK_EDIT}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingChecklistId(item._id);
+                      setEditingChecklistTitle(item.title);
+                    }}
+                    className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  >
+                    <Pencil className="size-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeChecklistMutation.mutate(item._id)}
+                    className="rounded p-1 text-slate-400 hover:bg-red-50 hover:text-red-600"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </RoleGate>
+              </div>
+            ),
+          )}
           <RoleGate permission={Permission.TASK_EDIT}>
             <div className="mt-2 flex gap-2">
               <Input
@@ -378,8 +449,9 @@ export const TaskDetailPage = () => {
         </CardHeader>
         <CardBody className="flex flex-col gap-4">
           {task.comments.map((comment) => {
-            const canDelete =
-              currentUser?._id === comment.user._id || currentUser?.role === UserRole.ADMIN;
+            const isOwner = currentUser?._id === comment.user._id;
+            const canDelete = isOwner || currentUser?.role === UserRole.ADMIN;
+            const isEditing = editingCommentId === comment._id;
             return (
               <div key={comment._id} className="flex gap-3">
                 <Avatar
@@ -395,7 +467,19 @@ export const TaskDetailPage = () => {
                       <span className="text-xs text-slate-400">
                         {new Date(comment.createdAt).toLocaleString()}
                       </span>
-                      {canDelete && (
+                      {isOwner && !isEditing && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCommentId(comment._id);
+                            setEditingCommentText(comment.text);
+                          }}
+                          className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                        >
+                          <Pencil className="size-3.5" />
+                        </button>
+                      )}
+                      {canDelete && !isEditing && (
                         <button
                           type="button"
                           onClick={() => removeCommentMutation.mutate(comment._id)}
@@ -406,7 +490,40 @@ export const TaskDetailPage = () => {
                       )}
                     </div>
                   </div>
-                  <p className="mt-0.5 text-sm text-slate-600">{comment.text}</p>
+                  {isEditing ? (
+                    <div className="mt-1 flex flex-col gap-2">
+                      <Textarea
+                        autoFocus
+                        value={editingCommentText}
+                        onChange={(e) => setEditingCommentText(e.target.value)}
+                        rows={2}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          disabled={!editingCommentText.trim()}
+                          isLoading={updateCommentMutation.isPending}
+                          onClick={() =>
+                            updateCommentMutation.mutate({
+                              commentId: comment._id,
+                              text: editingCommentText.trim(),
+                            })
+                          }
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingCommentId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="mt-0.5 text-sm text-slate-600">{comment.text}</p>
+                  )}
                 </div>
               </div>
             );

@@ -13,6 +13,7 @@ import {
   updateChecklistItemSchema,
   checklistItemParamSchema,
   addCommentSchema,
+  updateCommentSchema,
   commentParamSchema,
   attachmentParamSchema,
 } from '@/validators/task.validator';
@@ -28,6 +29,7 @@ import {
   updateChecklistItem,
   removeChecklistItem,
   addComment,
+  updateComment,
   removeComment,
   addTaskAttachment,
   removeTaskAttachment,
@@ -95,6 +97,12 @@ router.post(
   requirePermission(Permission.TASK_READ),
   validate(addCommentSchema),
   addComment,
+);
+router.patch(
+  '/:id/comments/:commentId',
+  requirePermission(Permission.TASK_READ),
+  validate(updateCommentSchema),
+  updateComment,
 );
 router.delete(
   '/:id/comments/:commentId',

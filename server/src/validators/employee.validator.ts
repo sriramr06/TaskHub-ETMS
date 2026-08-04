@@ -40,6 +40,22 @@ export const createEmployeeSchema = z.object({
   }),
 });
 
+export const linkEmployeeSchema = z.object({
+  body: z.object({
+    user: objectId,
+    department: z.string().trim().min(1, 'Department is required'),
+    designation: z.string().trim().min(1, 'Designation is required'),
+    employmentType: z.nativeEnum(EmploymentType).optional(),
+    employmentStatus: z.nativeEnum(EmploymentStatus).optional(),
+    reportingManager: objectId.optional(),
+    joiningDate: z.coerce.date({ required_error: 'Joining date is required' }),
+    dateOfBirth: z.coerce.date().optional(),
+    address: addressSchema.optional(),
+    emergencyContact: emergencyContactSchema.optional(),
+    skills: z.array(z.string().trim().min(1)).optional(),
+  }),
+});
+
 export const updateEmployeeSchema = z.object({
   params: z.object({ id: objectId }),
   body: z.object({

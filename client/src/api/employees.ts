@@ -55,6 +55,18 @@ export const createEmployee = async (payload: CreateEmployeePayload): Promise<Em
   return data.data!.employee;
 };
 
+export type LinkEmployeePayload = Omit<
+  CreateEmployeePayload,
+  'email' | 'password' | 'firstName' | 'middleName' | 'lastName' | 'phone' | 'role'
+> & {
+  user: string;
+};
+
+export const linkEmployee = async (payload: LinkEmployeePayload): Promise<Employee> => {
+  const { data } = await api.post<ApiResponse<{ employee: Employee }>>('/employees/link', payload);
+  return data.data!.employee;
+};
+
 export type UpdateEmployeePayload = Partial<Omit<CreateEmployeePayload, 'email' | 'password'>>;
 
 export const updateEmployee = async (
