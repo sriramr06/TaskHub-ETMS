@@ -13,6 +13,7 @@ import { logger } from '@/utils/logger';
 import authRoutes from '@/routes/auth.routes';
 import employeeRoutes from '@/routes/employee.routes';
 import teamRoutes from '@/routes/team.routes';
+import projectRoutes from '@/routes/project.routes';
 
 const app = express();
 connectDB();
@@ -28,6 +29,7 @@ app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/teams', teamRoutes);
+app.use('/api/projects', projectRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
