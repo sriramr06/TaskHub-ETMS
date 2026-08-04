@@ -139,6 +139,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.PROJECT_READ,
     Permission.TASK_READ,
     Permission.TASK_EDIT,
+    Permission.TEAM_READ,
   ],
   [UserRole.GUEST]: [Permission.PROJECT_READ, Permission.TASK_READ],
 };

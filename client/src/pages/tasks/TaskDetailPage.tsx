@@ -189,7 +189,7 @@ export const TaskDetailPage = () => {
                 <Badge tone={statusTone(task.priority)}>{enumLabel(task.priority)}</Badge>
               </div>
               <p className="mt-1 text-sm text-slate-500">
-                <Link to={`/projects/${task.project._id}`} className="hover:text-indigo-600">
+                <Link to={`/projects/${task.project._id}`} className="hover:text-teal-600">
                   {task.project.name}
                 </Link>{' '}
                 &middot; reported by {task.reporter.firstName} {task.reporter.lastName}
@@ -325,7 +325,7 @@ export const TaskDetailPage = () => {
                 href={att.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 truncate text-sm text-indigo-600 hover:text-indigo-500"
+                className="flex items-center gap-2 truncate text-sm text-teal-600 hover:text-teal-500"
               >
                 <Paperclip className="size-4 shrink-0" />
                 <span className="truncate">{att.name}</span>

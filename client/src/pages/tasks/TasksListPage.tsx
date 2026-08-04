@@ -56,7 +56,7 @@ const TaskCard = ({ task }: { task: Task }) => {
 
   return (
     <Card className="flex flex-col gap-2 p-3">
-      <Link to={`/tasks/${task._id}`} className="text-sm font-medium text-slate-800 hover:text-indigo-600">
+      <Link to={`/tasks/${task._id}`} className="text-sm font-medium text-slate-800 hover:text-teal-600">
         {task.title}
       </Link>
       <p className="text-xs text-slate-500">{task.project.name}</p>

@@ -1,7 +1,60 @@
 @import 'tailwindcss';
 
+/* Enables the `dark:` variant to be driven by a `.dark` class on <html>
+   (toggled by ThemeContext) instead of only `prefers-color-scheme`. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --color-surface: var(--surface);
+}
+
+:root {
+  --surface: #ffffff;
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* Elevated panel background (cards, modals, inputs, nav) — deliberately
+     independent of the inverted slate ramp below so surfaces stay a shade
+     lighter than the page background, preserving elevation in both themes.
+     Sits between slate-50 (page) and slate-100 (hover/badge tier) below so
+     hover states and badges remain visible against a card, not just against
+     the page. */
+  --surface: #172033;
+
+  /* The whole app consistently uses the slate scale as a pure neutral ramp
+     (lower number = lighter/subtler, higher number = darker/stronger). Dark
+     mode is a mirror image of that ramp, so every slate-* utility already
+     used throughout the app (text, borders, dividers, hover states) inverts
+     automatically without touching each component. slate-100 is nudged a
+     touch lighter than a pure mirror would give it, so hover backgrounds and
+     "slate" badges stay visibly distinct from --surface above. */
+  --color-slate-50: #0f172a;
+  --color-slate-100: #26344a;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+
+  /* Brand teal is only re-tuned for the "light chip" shades (sidebar
+     active state, avatar fallback, focus ring) — solid-fill uses like
+     buttons/links/spinner keep the standard vivid teal-500/600 in both
+     themes since those work fine on any background. */
+  --color-teal-50: #0f3d3a;
+  --color-teal-100: #115e59;
+  --color-teal-700: #99f6e4;
+
+  /* Same "light chip" adjustment for the red pastel hover/focus states used
+     on delete buttons and invalid form fields. */
+  --color-red-50: #450a0a;
+  --color-red-100: #7f1d1d;
 }
 
 html,
@@ -11,5 +64,5 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-slate-50 text-slate-900 antialiased transition-colors duration-150;
 }

@@ -28,7 +28,7 @@ export const Avatar = ({ name, src, className }: AvatarProps) => {
   return (
     <div
       className={cn(
-        'flex size-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700',
+        'flex size-8 items-center justify-center rounded-full bg-teal-100 text-xs font-semibold text-teal-700',
         className,
       )}
     >

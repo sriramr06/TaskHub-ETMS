@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Plus, Search } from 'lucide-react';
+import * as usersApi from '@/api/users';
 import * as employeesApi from '@/api/employees';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -20,8 +21,16 @@ import { Modal } from '@/components/ui/Modal';
 import { RoleGate } from '@/components/RoleGate';
 import { getErrorMessage } from '@/api/client';
 import { optionalSelect } from '@/lib/zodHelpers';
-import { EmploymentStatus, EmploymentType, Permission, UserRole, enumLabel } from '@/lib/constants';
+import {
+  EmploymentStatus,
+  EmploymentType,
+  Permission,
+  UserRole,
+  UserStatus,
+  enumLabel,
+} from '@/lib/constants';
 import { statusTone } from '@/lib/statusTone';
+import type { Employee } from '@/types';
 
 const createSchema = z.object({
   email: z.string().email('Enter a valid email address'),
@@ -40,26 +49,40 @@ const createSchema = z.object({
 type CreateInput = z.input<typeof createSchema>;
 type CreateValues = z.output<typeof createSchema>;
 
-export const EmployeesListPage = () => {
+export const PeopleListPage = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [department, setDepartment] = useState('');
-  const [employmentStatus, setEmploymentStatus] = useState('');
+  const [role, setRole] = useState('');
+  const [status, setStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['employees', { page, search, department, employmentStatus }],
+    queryKey: ['users', { page, search, role, status }],
     queryFn: () =>
-      employeesApi.listEmployees({
+      usersApi.listUsers({
         page,
         limit: 20,
         search: search || undefined,
-        department: department || undefined,
-        employmentStatus: employmentStatus || undefined,
+        role: role || undefined,
+        status: status || undefined,
       }),
     placeholderData: (prev) => prev,
   });
+
+  // Employee records enrich the user list with department/designation when
+  // present; not every user has one (e.g. self-registered accounts), so the
+  // table falls back to "—" for those rows instead of requiring it.
+  const { data: employeesData } = useQuery({
+    queryKey: ['employees', 'all'],
+    queryFn: () => employeesApi.listEmployees({ limit: 200 }),
+  });
+
+  const employeeByUserId = useMemo(() => {
+    const map = new Map<string, Employee>();
+    employeesData?.employees.forEach((emp) => map.set(emp.user._id, emp));
+    return map;
+  }, [employeesData]);
 
   const {
     register,
@@ -71,8 +94,11 @@ export const EmployeesListPage = () => {
   const onSubmit = async (values: CreateValues) => {
     try {
       await employeesApi.createEmployee(values);
-      toast.success('Employee created.');
-      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success('Person added.');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['users'] }),
+        queryClient.invalidateQueries({ queryKey: ['employees'] }),
+      ]);
       reset();
       setModalOpen(false);
     } catch (error) {
@@ -84,13 +110,13 @@ export const EmployeesListPage = () => {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Employees</h1>
-          <p className="text-sm text-slate-500">Manage employee records and onboarding.</p>
+          <h1 className="text-xl font-semibold text-slate-900">People</h1>
+          <p className="text-sm text-slate-500">Manage accounts and employment records.</p>
         </div>
         <RoleGate permission={Permission.USER_CREATE}>
           <Button onClick={() => setModalOpen(true)}>
             <Plus className="size-4" />
-            Add employee
+            Add person
           </Button>
         </RoleGate>
       </div>
@@ -108,25 +134,31 @@ export const EmployeesListPage = () => {
             }}
           />
         </div>
-        <Input
-          placeholder="Department"
-          className="w-44"
-          value={department}
-          onChange={(e) => {
-            setPage(1);
-            setDepartment(e.target.value);
-          }}
-        />
         <Select
-          value={employmentStatus}
+          value={role}
           onChange={(e) => {
             setPage(1);
-            setEmploymentStatus(e.target.value);
+            setRole(e.target.value);
           }}
-          className="w-48"
+          className="w-40"
+        >
+          <option value="">All roles</option>
+          {Object.values(UserRole).map((r) => (
+            <option key={r} value={r}>
+              {enumLabel(r)}
+            </option>
+          ))}
+        </Select>
+        <Select
+          value={status}
+          onChange={(e) => {
+            setPage(1);
+            setStatus(e.target.value);
+          }}
+          className="w-40"
         >
           <option value="">All statuses</option>
-          {Object.values(EmploymentStatus).map((s) => (
+          {Object.values(UserStatus).map((s) => (
             <option key={s} value={s}>
               {enumLabel(s)}
             </option>
@@ -136,61 +168,60 @@ export const EmployeesListPage = () => {
 
       <Card>
         {isLoading && <PageSpinner />}
-        {!isLoading && data?.employees.length === 0 && (
-          <EmptyState title="No employees found" description="Try adjusting your filters." />
+        {!isLoading && data?.users.length === 0 && (
+          <EmptyState title="No people found" description="Try adjusting your filters." />
         )}
-        {!isLoading && data && data.employees.length > 0 && (
+        {!isLoading && data && data.users.length > 0 && (
           <>
-            <table className="w-full text-left text-sm">
-              <thead className="border-b border-slate-100 text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Employee</th>
-                  <th className="px-4 py-3 font-medium">ID</th>
-                  <th className="px-4 py-3 font-medium">Department</th>
-                  <th className="px-4 py-3 font-medium">Designation</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.employees.map((emp) => (
-                  <tr key={emp._id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3">
-                      <Link to={`/employees/${emp._id}`} className="flex items-center gap-3">
-                        <Avatar
-                          name={`${emp.user.firstName} ${emp.user.lastName}`}
-                          src={emp.user.avatar}
-                        />
-                        <div>
-                          <p className="font-medium text-slate-800">
-                            {emp.user.firstName} {emp.user.lastName}
-                          </p>
-                          <p className="text-xs text-slate-500">{emp.user.email}</p>
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-slate-500">{emp.employeeId}</td>
-                    <td className="px-4 py-3 text-slate-700">{emp.department}</td>
-                    <td className="px-4 py-3 text-slate-700">{emp.designation}</td>
-                    <td className="px-4 py-3">
-                      <Badge tone={statusTone(emp.employmentStatus)}>
-                        {enumLabel(emp.employmentStatus)}
-                      </Badge>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="border-b border-slate-100 text-xs uppercase text-slate-500">
+                  <tr>
+                    <th className="px-4 py-3 font-medium">Person</th>
+                    <th className="px-4 py-3 font-medium">Role</th>
+                    <th className="px-4 py-3 font-medium">Department</th>
+                    <th className="px-4 py-3 font-medium">Designation</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {data.users.map((u) => {
+                    const employee = employeeByUserId.get(u._id);
+                    return (
+                      <tr key={u._id} className="hover:bg-slate-50">
+                        <td className="px-4 py-3">
+                          <Link to={`/people/${u._id}`} className="flex items-center gap-3">
+                            <Avatar name={`${u.firstName} ${u.lastName}`} src={u.avatar} />
+                            <div>
+                              <p className="font-medium text-slate-800">
+                                {u.firstName} {u.lastName}
+                              </p>
+                              <p className="text-xs text-slate-500">{u.email}</p>
+                            </div>
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge tone={statusTone(u.role)}>{enumLabel(u.role)}</Badge>
+                        </td>
+                        <td className="px-4 py-3 text-slate-700">{employee?.department ?? '—'}</td>
+                        <td className="px-4 py-3 text-slate-700">
+                          {employee?.designation ?? '—'}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge tone={statusTone(u.status)}>{enumLabel(u.status)}</Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
             <Pagination meta={data.pagination} onPageChange={setPage} />
           </>
         )}
       </Card>
 
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Add employee"
-        size="lg"
-      >
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add person" size="lg">
         <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4">
           <Input label="Email" type="email" error={errors.email?.message} {...register('email')} />
           <Input
@@ -259,7 +290,7 @@ export const EmployeesListPage = () => {
               Cancel
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
-              Create employee
+              Add person
             </Button>
           </div>
         </form>

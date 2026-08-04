@@ -43,9 +43,9 @@ export const RegisterPage = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-surface p-8 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
+          <div className="mx-auto mb-3 flex size-10 items-center justify-center rounded-lg bg-teal-600 text-sm font-bold text-white">
             TH
           </div>
           <h1 className="text-lg font-semibold text-slate-900">Create your account</h1>
@@ -82,7 +82,7 @@ export const RegisterPage = () => {
 
         <p className="mt-6 text-center text-sm text-slate-500">
           Already have an account?{' '}
-          <Link to="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+          <Link to="/login" className="font-medium text-teal-600 hover:text-teal-500">
             Sign in
           </Link>
         </p>

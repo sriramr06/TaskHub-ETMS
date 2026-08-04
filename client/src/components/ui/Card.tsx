@@ -3,7 +3,7 @@ import { cn } from '@/lib/cn';
 
 export const Card = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn('rounded-xl border border-slate-200 bg-white shadow-sm', className)}
+    className={cn('rounded-xl border border-slate-200 bg-surface shadow-sm', className)}
     {...props}
   />
 );

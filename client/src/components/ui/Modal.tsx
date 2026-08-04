@@ -30,12 +30,12 @@ export const Modal = ({ open, onClose, title, children, size = 'md' }: ModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-slate-900/50" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-xl bg-white shadow-xl',
+          'relative z-10 max-h-[90vh] w-full overflow-y-auto rounded-xl bg-surface shadow-xl',
           sizeClasses[size],
         )}
       >

@@ -120,7 +120,7 @@ export const ProfilePage = () => {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={avatarUploading}
-              className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full bg-indigo-600 text-white shadow hover:bg-indigo-500 disabled:opacity-60"
+              className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full bg-teal-600 text-white shadow hover:bg-teal-500 disabled:opacity-60"
             >
               <Camera className="size-3.5" />
             </button>

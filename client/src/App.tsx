@@ -5,10 +5,8 @@ import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProfilePage } from '@/pages/ProfilePage';
-import { UsersListPage } from '@/pages/users/UsersListPage';
-import { UserDetailPage } from '@/pages/users/UserDetailPage';
-import { EmployeesListPage } from '@/pages/employees/EmployeesListPage';
-import { EmployeeDetailPage } from '@/pages/employees/EmployeeDetailPage';
+import { PeopleListPage } from '@/pages/people/PeopleListPage';
+import { PersonDetailPage } from '@/pages/people/PersonDetailPage';
 import { TeamsListPage } from '@/pages/teams/TeamsListPage';
 import { TeamDetailPage } from '@/pages/teams/TeamDetailPage';
 import { ProjectsListPage } from '@/pages/projects/ProjectsListPage';
@@ -30,11 +28,8 @@ function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
-          <Route path="/users" element={<UsersListPage />} />
-          <Route path="/users/:id" element={<UserDetailPage />} />
-
-          <Route path="/employees" element={<EmployeesListPage />} />
-          <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+          <Route path="/people" element={<PeopleListPage />} />
+          <Route path="/people/:id" element={<PersonDetailPage />} />
 
           <Route path="/teams" element={<TeamsListPage />} />
           <Route path="/teams/:id" element={<TeamDetailPage />} />

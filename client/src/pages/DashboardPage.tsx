@@ -29,7 +29,7 @@ export const DashboardPage = () => {
         <Card>
           <CardHeader>
             <h2 className="text-sm font-semibold text-slate-900">My tasks</h2>
-            <Link to="/tasks" className="text-xs font-medium text-indigo-600 hover:text-indigo-500">
+            <Link to="/tasks" className="text-xs font-medium text-teal-600 hover:text-teal-500">
               View all
             </Link>
           </CardHeader>
@@ -59,7 +59,7 @@ export const DashboardPage = () => {
             <h2 className="text-sm font-semibold text-slate-900">My projects</h2>
             <Link
               to="/projects"
-              className="text-xs font-medium text-indigo-600 hover:text-indigo-500"
+              className="text-xs font-medium text-teal-600 hover:text-teal-500"
             >
               View all
             </Link>
