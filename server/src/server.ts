@@ -11,6 +11,7 @@ import { notFound } from '@/middlewares/notFound';
 import { errorHandler } from '@/middlewares/errorHandler';
 import { logger } from '@/utils/logger';
 import authRoutes from '@/routes/auth.routes';
+import userRoutes from '@/routes/user.routes';
 import employeeRoutes from '@/routes/employee.routes';
 import teamRoutes from '@/routes/team.routes';
 import projectRoutes from '@/routes/project.routes';
@@ -28,6 +29,7 @@ app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use('/api', apiLimiter);
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/projects', projectRoutes);
