@@ -12,6 +12,7 @@ import { errorHandler } from '@/middlewares/errorHandler';
 import { logger } from '@/utils/logger';
 import authRoutes from '@/routes/auth.routes';
 import employeeRoutes from '@/routes/employee.routes';
+import teamRoutes from '@/routes/team.routes';
 
 const app = express();
 connectDB();
@@ -26,6 +27,7 @@ app.use('/api', apiLimiter);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
+app.use('/api/teams', teamRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

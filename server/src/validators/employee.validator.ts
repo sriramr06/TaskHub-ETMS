@@ -1,9 +1,7 @@
-import mongoose from 'mongoose';
 import { z } from 'zod';
 import { UserRole } from '@/constants/enums/user';
 import { EmploymentType, EmploymentStatus } from '@/constants/enums/employee';
-
-const objectId = z.string().refine((val) => mongoose.isValidObjectId(val), 'Invalid id');
+import { objectIdSchema as objectId } from '@/validators/common.validator';
 
 const addressSchema = z.object({
   line1: z.string().trim().optional(),
