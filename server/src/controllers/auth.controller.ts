@@ -1,4 +1,5 @@
 import { Request, Response, CookieOptions } from 'express';
+import ms from 'ms';
 import { asyncHandler } from '@/middlewares/asyncHandler';
 import { AppError } from '@/utils/AppError';
 import { ApiResponse } from '@/utils/ApiResponse';
@@ -10,7 +11,7 @@ import { generateRefreshToken, hashToken } from '@/utils/token';
 import { env } from '@/config/env';
 
 const REFRESH_TOKEN_COOKIE = 'tms_refresh_token';
-const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const REFRESH_TOKEN_TTL_MS = ms(env.JWT_REFRESH_EXPIRES_IN);
 
 const isProd = env.NODE_ENV === 'production';
 

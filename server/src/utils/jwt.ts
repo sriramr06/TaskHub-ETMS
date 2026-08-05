@@ -8,7 +8,7 @@ export interface AccessTokenPayload {
 }
 
 export const signAccessToken = (payload: AccessTokenPayload): string => {
-  const options = { expiresIn: env.JWT_EXPIRES_IN } as SignOptions;
+  const options = { expiresIn: env.JWT_ACCESS_EXPIRES_IN } as SignOptions;
   return jwt.sign(payload, env.JWT_SECRET, options);
 };
 

@@ -20,6 +20,11 @@ import taskRoutes from '@/routes/task.routes';
 const app = express();
 connectDB();
 
+// Render/Vercel-style platforms put the app behind a reverse proxy — without
+// this, express-rate-limit can't trust X-Forwarded-For and req.ip resolves
+// to the proxy's address instead of the real client.
+app.set('trust proxy', 1);
+
 app.use(helmet());
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json());
@@ -27,6 +32,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use('/api', apiLimiter);
+
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ success: true, message: 'ok' });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

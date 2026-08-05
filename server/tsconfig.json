@@ -25,6 +25,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*.ts", "../shared/constants/permissions"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }
