@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Plus, Search } from 'lucide-react';
 import * as usersApi from '@/api/users';
@@ -19,6 +18,7 @@ import { TableRowSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Modal } from '@/components/ui/Modal';
 import { RoleGate } from '@/components/RoleGate';
+import { PersonDetailDialog } from '@/pages/people/PersonDetailDialog';
 import { getErrorMessage } from '@/api/client';
 import { optionalSelect } from '@/lib/zodHelpers';
 import {
@@ -55,6 +55,7 @@ export const PeopleListPage = () => {
   const [role, setRole] = useState('');
   const [status, setStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -174,11 +175,11 @@ export const PeopleListPage = () => {
             <table className="w-full text-left text-sm">
               <thead className="border-b border-slate-100 text-xs uppercase text-slate-500">
                 <tr>
-                  <th className="px-4 py-3 font-medium">Person</th>
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Email</th>
                   <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Department</th>
                   <th className="px-4 py-3 font-medium">Designation</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -198,37 +199,41 @@ export const PeopleListPage = () => {
               <table className="w-full text-left text-sm">
                 <thead className="border-b border-slate-100 text-xs uppercase text-slate-500">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Person</th>
+                    <th className="px-4 py-3 font-medium">Name</th>
+                    <th className="px-4 py-3 font-medium">Email</th>
                     <th className="px-4 py-3 font-medium">Role</th>
                     <th className="px-4 py-3 font-medium">Department</th>
                     <th className="px-4 py-3 font-medium">Designation</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {data.users.map((u) => {
                     const employee = employeeByUserId.get(u._id);
                     return (
-                      <tr key={u._id} className="hover:bg-slate-50">
+                      <tr
+                        key={u._id}
+                        onClick={() => setSelectedUserId(u._id)}
+                        className="cursor-pointer hover:bg-slate-50"
+                      >
                         <td className="px-4 py-3">
-                          <Link to={`/people/${u._id}`} className="flex items-center gap-3">
+                          <div className="flex items-center gap-3">
                             <Avatar name={`${u.firstName} ${u.lastName}`} src={u.avatar} />
                             <div>
                               <p className="font-medium text-slate-800">
                                 {u.firstName} {u.lastName}
                               </p>
-                              <p className="text-xs text-slate-500">{u.email}</p>
+                              <Badge tone={statusTone(u.status)} className="mt-0.5">
+                                {enumLabel(u.status)}
+                              </Badge>
                             </div>
-                          </Link>
+                          </div>
                         </td>
+                        <td className="px-4 py-3 text-slate-700">{u.email}</td>
                         <td className="px-4 py-3">
                           <Badge tone={statusTone(u.role)}>{enumLabel(u.role)}</Badge>
                         </td>
                         <td className="px-4 py-3 text-slate-700">{employee?.department ?? '—'}</td>
                         <td className="px-4 py-3 text-slate-700">{employee?.designation ?? '—'}</td>
-                        <td className="px-4 py-3">
-                          <Badge tone={statusTone(u.status)}>{enumLabel(u.status)}</Badge>
-                        </td>
                       </tr>
                     );
                   })}
@@ -310,6 +315,10 @@ export const PeopleListPage = () => {
           </div>
         </form>
       </Modal>
+
+      {selectedUserId && (
+        <PersonDetailDialog userId={selectedUserId} onClose={() => setSelectedUserId(null)} />
+      )}
     </div>
   );
 };

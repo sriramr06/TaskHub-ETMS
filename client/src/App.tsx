@@ -6,7 +6,6 @@ import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProfilePage } from '@/pages/ProfilePage';
 import { PeopleListPage } from '@/pages/people/PeopleListPage';
-import { PersonDetailPage } from '@/pages/people/PersonDetailPage';
 import { TeamsListPage } from '@/pages/teams/TeamsListPage';
 import { TeamDetailPage } from '@/pages/teams/TeamDetailPage';
 import { ProjectsListPage } from '@/pages/projects/ProjectsListPage';
@@ -29,7 +28,6 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
 
           <Route path="/people" element={<PeopleListPage />} />
-          <Route path="/people/:id" element={<PersonDetailPage />} />
 
           <Route path="/teams" element={<TeamsListPage />} />
           <Route path="/teams/:id" element={<TeamDetailPage />} />
