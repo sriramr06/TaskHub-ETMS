@@ -21,7 +21,8 @@ import { RoleGate } from '@/components/RoleGate';
 import { useUsersOptions } from '@/hooks/useUsersOptions';
 import { useTeamsOptions } from '@/hooks/useTeamsOptions';
 import { getErrorMessage } from '@/api/client';
-import { Permission, ProjectStatus, TaskPriority, enumLabel } from '@/lib/constants';
+import { useAuth } from '@/context/AuthContext';
+import { Permission, ProjectStatus, TaskPriority, enumLabel, hasPermission } from '@/lib/constants';
 import { statusTone } from '@/lib/statusTone';
 
 const schema = z.object({
@@ -41,6 +42,8 @@ export const ProjectDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const canEditProject = hasPermission(currentUser?.permissions, Permission.PROJECT_EDIT);
   const { users } = useUsersOptions();
   const { teams } = useTeamsOptions();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -235,30 +238,51 @@ export const ProjectDetailPage = () => {
         <CardBody>
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Input label="Project name" error={errors.name?.message} {...register('name')} />
+              <Input
+                label="Project name"
+                disabled={!canEditProject}
+                error={errors.name?.message}
+                {...register('name')}
+              />
             </div>
             <div className="sm:col-span-2">
               <Textarea
                 label="Description"
+                disabled={!canEditProject}
                 error={errors.description?.message}
                 {...register('description')}
               />
             </div>
-            <Select label="Status" error={errors.status?.message} {...register('status')}>
+            <Select
+              label="Status"
+              disabled={!canEditProject}
+              error={errors.status?.message}
+              {...register('status')}
+            >
               {Object.values(ProjectStatus).map((s) => (
                 <option key={s} value={s}>
                   {enumLabel(s)}
                 </option>
               ))}
             </Select>
-            <Select label="Priority" error={errors.priority?.message} {...register('priority')}>
+            <Select
+              label="Priority"
+              disabled={!canEditProject}
+              error={errors.priority?.message}
+              {...register('priority')}
+            >
               {Object.values(TaskPriority).map((p) => (
                 <option key={p} value={p}>
                   {enumLabel(p)}
                 </option>
               ))}
             </Select>
-            <Select label="Team" error={errors.team?.message} {...register('team')}>
+            <Select
+              label="Team"
+              disabled={!canEditProject}
+              error={errors.team?.message}
+              {...register('team')}
+            >
               <option value="">No team</option>
               {teams.map((t) => (
                 <option key={t._id} value={t._id}>
@@ -271,26 +295,31 @@ export const ProjectDetailPage = () => {
               type="number"
               min={0}
               max={100}
+              disabled={!canEditProject}
               error={errors.progress?.message}
               {...register('progress')}
             />
             <Input
               label="Start date"
               type="date"
+              disabled={!canEditProject}
               error={errors.startDate?.message}
               {...register('startDate')}
             />
             <Input
               label="Deadline"
               type="date"
+              disabled={!canEditProject}
               error={errors.deadline?.message}
               {...register('deadline')}
             />
-            <div className="sm:col-span-2">
-              <Button type="submit" isLoading={isSubmitting}>
-                Save changes
-              </Button>
-            </div>
+            <RoleGate permission={Permission.PROJECT_EDIT}>
+              <div className="sm:col-span-2">
+                <Button type="submit" isLoading={isSubmitting}>
+                  Save changes
+                </Button>
+              </div>
+            </RoleGate>
           </form>
         </CardBody>
       </Card>

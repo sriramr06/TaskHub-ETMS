@@ -102,52 +102,18 @@ export const Permission = {
   TEAM_READ: 'team:read',
   TEAM_UPDATE: 'team:update',
   TEAM_DELETE: 'team:delete',
-
-  ADMIN_ACCESS: 'admin:acsess',
-  VIEW_ANALYTICS: 'analytics:view',
 } as const;
 export type Permission = (typeof Permission)[keyof typeof Permission];
 
-export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  [UserRole.ADMIN]: Object.values(Permission),
-  [UserRole.MANAGER]: [
-    Permission.USER_READ,
-    Permission.PROJECT_CREATE,
-    Permission.PROJECT_READ,
-    Permission.PROJECT_EDIT,
-    Permission.PROJECT_DELETE,
-    Permission.TASK_CREATE,
-    Permission.TASK_READ,
-    Permission.TASK_EDIT,
-    Permission.TASK_ASSIGN,
-    Permission.TEAM_READ,
-    Permission.TEAM_UPDATE,
-    Permission.VIEW_ANALYTICS,
-  ],
-  [UserRole.TEAMLEAD]: [
-    Permission.USER_READ,
-    Permission.PROJECT_READ,
-    Permission.PROJECT_EDIT,
-    Permission.TASK_CREATE,
-    Permission.TASK_READ,
-    Permission.TASK_EDIT,
-    Permission.TASK_ASSIGN,
-    Permission.TEAM_READ,
-  ],
-  [UserRole.MEMBER]: [
-    Permission.USER_READ,
-    Permission.PROJECT_READ,
-    Permission.TASK_READ,
-    Permission.TASK_EDIT,
-    Permission.TEAM_READ,
-  ],
-  [UserRole.GUEST]: [Permission.PROJECT_READ, Permission.TASK_READ],
-};
-
-export const hasPermission = (role: UserRole | undefined, permission: Permission): boolean => {
-  if (!role) return false;
-  return ROLE_PERMISSIONS[role]?.includes(permission) ?? false;
-};
+// There is deliberately no client-side role->permission table. The server is
+// the sole source of truth (see User model's `permissions` virtual) and sends
+// each user's resolved permission list on login/register/getMe; the client
+// just checks membership in whatever it was actually granted. This is what
+// keeps the UI from silently drifting out of sync with what the API allows.
+export const hasPermission = (
+  permissions: Permission[] | undefined,
+  permission: Permission,
+): boolean => permissions?.includes(permission) ?? false;
 
 export const ENUM_LABELS: Record<string, string> = {
   'full-time': 'Full-time',

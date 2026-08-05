@@ -19,7 +19,8 @@ import { PageSpinner } from '@/components/ui/Spinner';
 import { RoleGate } from '@/components/RoleGate';
 import { useUsersOptions } from '@/hooks/useUsersOptions';
 import { getErrorMessage } from '@/api/client';
-import { Permission, TeamRole, TeamStatus, enumLabel } from '@/lib/constants';
+import { useAuth } from '@/context/AuthContext';
+import { Permission, TeamRole, TeamStatus, enumLabel, hasPermission } from '@/lib/constants';
 import { statusTone } from '@/lib/statusTone';
 
 const schema = z.object({
@@ -34,6 +35,8 @@ export const TeamDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
+  const canEditTeam = hasPermission(currentUser?.permissions, Permission.TEAM_UPDATE);
   const { users } = useUsersOptions();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [newMemberId, setNewMemberId] = useState('');
@@ -235,24 +238,37 @@ export const TeamDetailPage = () => {
         </CardHeader>
         <CardBody>
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <Input label="Team name" error={errors.name?.message} {...register('name')} />
+            <Input
+              label="Team name"
+              disabled={!canEditTeam}
+              error={errors.name?.message}
+              {...register('name')}
+            />
             <Textarea
               label="Description"
+              disabled={!canEditTeam}
               error={errors.description?.message}
               {...register('description')}
             />
-            <Select label="Status" error={errors.status?.message} {...register('status')}>
+            <Select
+              label="Status"
+              disabled={!canEditTeam}
+              error={errors.status?.message}
+              {...register('status')}
+            >
               {Object.values(TeamStatus).map((s) => (
                 <option key={s} value={s}>
                   {enumLabel(s)}
                 </option>
               ))}
             </Select>
-            <div>
-              <Button type="submit" isLoading={isSubmitting}>
-                Save changes
-              </Button>
-            </div>
+            <RoleGate permission={Permission.TEAM_UPDATE}>
+              <div>
+                <Button type="submit" isLoading={isSubmitting}>
+                  Save changes
+                </Button>
+              </div>
+            </RoleGate>
           </form>
         </CardBody>
       </Card>

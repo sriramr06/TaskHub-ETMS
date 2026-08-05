@@ -19,9 +19,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.TEAM_CREATE,
     Permission.TEAM_READ,
     Permission.TEAM_UPDATE,
-    Permission.TEAM_DELETE,
-    Permission.ADMIN_ACCESS,
-    Permission.VIEW_ANALYTICS
+    Permission.TEAM_DELETE
   ],
 
   [UserRole.MANAGER]: [
@@ -35,8 +33,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.TASK_EDIT,
     Permission.TASK_ASSIGN,
     Permission.TEAM_READ,
-    Permission.TEAM_UPDATE,
-    Permission.VIEW_ANALYTICS
+    Permission.TEAM_UPDATE
   ],
 
   [UserRole.TEAMLEAD]: [
@@ -47,7 +44,8 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.TASK_READ,
     Permission.TASK_EDIT,
     Permission.TASK_ASSIGN,
-    Permission.TEAM_READ
+    Permission.TEAM_READ,
+    Permission.TEAM_UPDATE
   ],
   
   [UserRole.MEMBER]: [

@@ -1,6 +1,8 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { UserRole, UserStatus } from '@/constants/enums/user';
+import { Permission } from '@/constants/enums/permissions';
+import { ROLE_PERMISSIONS } from '@/constants/rolesPermissions';
 
 export interface IUser extends Document {
   email: string;
@@ -12,6 +14,7 @@ export interface IUser extends Document {
   phone?: string;
   role: UserRole;
   status: UserStatus;
+  readonly permissions: Permission[];
   lastLogin?: Date;
   metadata: {
     createdBy?: Types.ObjectId;
@@ -91,6 +94,12 @@ userSchema.index({ status: 1 });
 
 userSchema.virtual('fullName').get(function (this: IUser) {
   return [this.firstName, this.middleName, this.lastName].filter(Boolean).join(' ');
+});
+
+// Single source of truth for role->permission mapping (server-side). The client
+// never re-derives this — it trusts whatever comes back on the `user` object.
+userSchema.virtual('permissions').get(function (this: IUser) {
+  return ROLE_PERMISSIONS[this.role] ?? [];
 });
 
 userSchema.pre('save', async function (next) {

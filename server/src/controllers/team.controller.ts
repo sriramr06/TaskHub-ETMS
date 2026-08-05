@@ -3,11 +3,40 @@ import { asyncHandler } from '@/middlewares/asyncHandler';
 import { AppError } from '@/utils/AppError';
 import { ApiResponse } from '@/utils/ApiResponse';
 import { User } from '@/models/User';
-import { Team } from '@/models/Team';
+import { Team, ITeam } from '@/models/Team';
 import { parsePagination, buildPaginationMeta } from '@/utils/pagination';
+import { isPrivilegedRole } from '@/utils/scope';
 
 const TEAM_LEAD_POPULATE = 'firstName lastName email avatar';
 const MEMBER_POPULATE = { path: 'members.user', select: TEAM_LEAD_POPULATE };
+
+// Broad check for read access: anyone on the team (lead or plain member) can
+// view it. ADMIN/MANAGER bypass this and see every team.
+const canViewTeam = (userId: string, team: ITeam): boolean =>
+  team.teamLead.toString() === userId || team.members.some((m) => m.user.toString() === userId);
+
+// Strict check for write access: only the team's actual lead can manage it,
+// even though TEAMLEAD as a role grants team:update in general. Being a
+// regular member of someone else's team doesn't grant edit rights.
+const canManageTeam = (userId: string, team: ITeam): boolean => team.teamLead.toString() === userId;
+
+const loadTeamWithAccess = async (
+  req: Request,
+  teamId: string | undefined,
+  check: (userId: string, team: ITeam) => boolean,
+  deniedMessage: string,
+): Promise<InstanceType<typeof Team>> => {
+  const team = await Team.findById(teamId);
+  if (!team) {
+    throw new AppError('Team not found.', 404);
+  }
+
+  if (!isPrivilegedRole(req.user!.role) && !check(req.user!.id, team)) {
+    throw new AppError(deniedMessage, 403);
+  }
+
+  return team;
+};
 
 export const createTeam = asyncHandler(async (req: Request, res: Response) => {
   const { name, description, teamLead, members } = req.body as {
@@ -49,6 +78,10 @@ export const getTeams = asyncHandler(async (req: Request, res: Response) => {
   if (status) filter.status = status;
   if (search) filter.name = { $regex: search, $options: 'i' };
 
+  if (!isPrivilegedRole(req.user!.role)) {
+    filter.$or = [{ teamLead: req.user!.id }, { 'members.user': req.user!.id }];
+  }
+
   const [teams, total] = await Promise.all([
     Team.find(filter)
       .populate('teamLead', TEAM_LEAD_POPULATE)
@@ -79,13 +112,16 @@ export const getMyTeams = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getTeamById = asyncHandler(async (req: Request, res: Response) => {
-  const team = await Team.findById(req.params.id)
-    .populate('teamLead', TEAM_LEAD_POPULATE)
-    .populate(MEMBER_POPULATE);
-
-  if (!team) {
-    throw new AppError('Team not found.', 404);
-  }
+  const found = await loadTeamWithAccess(
+    req,
+    req.params.id,
+    canViewTeam,
+    'You do not have access to this team.',
+  );
+  const team = await found.populate([
+    { path: 'teamLead', select: TEAM_LEAD_POPULATE },
+    MEMBER_POPULATE,
+  ]);
 
   res.status(200).json(new ApiResponse(200, 'Team fetched successfully.', { team }));
 });
@@ -106,6 +142,13 @@ export const updateTeam = asyncHandler(async (req: Request, res: Response) => {
       throw new AppError('A team with this name already exists.', 409);
     }
   }
+
+  await loadTeamWithAccess(
+    req,
+    req.params.id,
+    canManageTeam,
+    'You do not have permission to edit this team.',
+  );
 
   const team = await Team.findByIdAndUpdate(
     req.params.id,
@@ -140,10 +183,12 @@ export const addTeamMember = asyncHandler(async (req: Request, res: Response) =>
     throw new AppError('The specified user does not exist.', 404);
   }
 
-  const team = await Team.findById(req.params.id);
-  if (!team) {
-    throw new AppError('Team not found.', 404);
-  }
+  const team = await loadTeamWithAccess(
+    req,
+    req.params.id,
+    canManageTeam,
+    'You do not have permission to edit this team.',
+  );
 
   const alreadyMember = team.members.some((m) => m.user.toString() === user);
   if (alreadyMember) {
@@ -160,10 +205,12 @@ export const addTeamMember = asyncHandler(async (req: Request, res: Response) =>
 export const updateTeamMemberRole = asyncHandler(async (req: Request, res: Response) => {
   const { role } = req.body;
 
-  const team = await Team.findById(req.params.id);
-  if (!team) {
-    throw new AppError('Team not found.', 404);
-  }
+  const team = await loadTeamWithAccess(
+    req,
+    req.params.id,
+    canManageTeam,
+    'You do not have permission to edit this team.',
+  );
 
   const member = team.members.find((m) => m.user.toString() === req.params.userId);
   if (!member) {
@@ -178,10 +225,12 @@ export const updateTeamMemberRole = asyncHandler(async (req: Request, res: Respo
 });
 
 export const removeTeamMember = asyncHandler(async (req: Request, res: Response) => {
-  const team = await Team.findById(req.params.id);
-  if (!team) {
-    throw new AppError('Team not found.', 404);
-  }
+  const team = await loadTeamWithAccess(
+    req,
+    req.params.id,
+    canManageTeam,
+    'You do not have permission to edit this team.',
+  );
 
   const memberIndex = team.members.findIndex((m) => m.user.toString() === req.params.userId);
   if (memberIndex === -1) {

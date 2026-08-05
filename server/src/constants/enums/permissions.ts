@@ -22,9 +22,5 @@ export enum Permission {
   TEAM_CREATE = 'team:create',
   TEAM_READ = 'team:read',
   TEAM_UPDATE = 'team:update',
-  TEAM_DELETE = 'team:delete',
-
-  // Admin
-  ADMIN_ACCESS = 'admin:acsess',
-  VIEW_ANALYTICS = 'analytics:view'
+  TEAM_DELETE = 'team:delete'
 }

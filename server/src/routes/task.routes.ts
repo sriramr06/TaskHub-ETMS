@@ -94,19 +94,19 @@ router.delete(
 
 router.post(
   '/:id/comments',
-  requirePermission(Permission.TASK_READ),
+  requirePermission(Permission.TASK_EDIT),
   validate(addCommentSchema),
   addComment,
 );
 router.patch(
   '/:id/comments/:commentId',
-  requirePermission(Permission.TASK_READ),
+  requirePermission(Permission.TASK_EDIT),
   validate(updateCommentSchema),
   updateComment,
 );
 router.delete(
   '/:id/comments/:commentId',
-  requirePermission(Permission.TASK_READ),
+  requirePermission(Permission.TASK_EDIT),
   validate(commentParamSchema),
   removeComment,
 );

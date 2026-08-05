@@ -5,7 +5,7 @@ import { Permission, hasPermission } from '@/lib/constants';
 
 export const useUsersOptions = () => {
   const { user } = useAuth();
-  const enabled = hasPermission(user?.role, Permission.USER_READ);
+  const enabled = hasPermission(user?.permissions, Permission.USER_READ);
 
   const { data, isLoading } = useQuery({
     queryKey: ['users', 'options'],

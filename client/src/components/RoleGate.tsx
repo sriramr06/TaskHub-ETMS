@@ -19,7 +19,7 @@ interface RoleGateProps {
 export const RoleGate = ({ permission, roles, children, fallback = null }: RoleGateProps) => {
   const { user } = useAuth();
 
-  if (permission && !hasPermission(user?.role, permission)) return <>{fallback}</>;
+  if (permission && !hasPermission(user?.permissions, permission)) return <>{fallback}</>;
   if (roles && (!user || !roles.includes(user.role))) return <>{fallback}</>;
 
   return <>{children}</>;

@@ -9,6 +9,7 @@ import type {
   TaskStatus,
   TaskPriority,
   TaskLabel,
+  Permission,
 } from '@/lib/constants';
 
 export interface ApiResponse<T> {
@@ -38,6 +39,8 @@ export interface User {
   phone?: string;
   role: UserRole;
   status: UserStatus;
+  /** Computed server-side from `role`; this is the source of truth for UI permission checks. */
+  permissions: Permission[];
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;

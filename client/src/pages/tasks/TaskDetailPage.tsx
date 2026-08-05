@@ -7,6 +7,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, Paperclip, Pencil, Plus, Send, Trash2, X } from 'lucide-react';
 import * as tasksApi from '@/api/tasks';
+import * as projectsApi from '@/api/projects';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -18,9 +19,8 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { PageSpinner } from '@/components/ui/Spinner';
 import { RoleGate } from '@/components/RoleGate';
 import { useAuth } from '@/context/AuthContext';
-import { useUsersOptions } from '@/hooks/useUsersOptions';
 import { getErrorMessage } from '@/api/client';
-import { Permission, TaskPriority, TaskStatus, UserRole, enumLabel } from '@/lib/constants';
+import { Permission, TaskPriority, TaskStatus, UserRole, enumLabel, hasPermission } from '@/lib/constants';
 import { statusTone } from '@/lib/statusTone';
 import { cn } from '@/lib/cn';
 
@@ -42,7 +42,7 @@ export const TaskDetailPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
-  const { users } = useUsersOptions();
+  const canEditTask = hasPermission(currentUser?.permissions, Permission.TASK_EDIT);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -59,6 +59,20 @@ export const TaskDetailPage = () => {
     queryFn: () => tasksApi.getTask(id!),
     enabled: !!id,
   });
+
+  // Only people already on the task's project are valid assignees (enforced
+  // server-side too) — so the picker only ever offers the project's owner
+  // and members, not every user in the system.
+  const { data: project } = useQuery({
+    queryKey: ['projects', task?.project._id],
+    queryFn: () => projectsApi.getProject(task!.project._id),
+    enabled: !!task,
+  });
+  const assignableUsers = project
+    ? [project.owner, ...project.members].filter(
+        (u, index, all) => all.findIndex((other) => other._id === u._id) === index,
+      )
+    : [];
 
   const {
     register,
@@ -257,7 +271,12 @@ export const TaskDetailPage = () => {
                 Manage assignees
               </summary>
               <div className="flex flex-col gap-1 border-t border-slate-100 p-3">
-                {users.map((u) => (
+                {assignableUsers.length === 0 && (
+                  <p className="text-sm text-slate-500">
+                    No project members to assign yet — add some from the project page first.
+                  </p>
+                )}
+                {assignableUsers.map((u) => (
                   <label key={u._id} className="flex items-center gap-2 text-sm text-slate-700">
                     <input
                       type="checkbox"
@@ -558,23 +577,39 @@ export const TaskDetailPage = () => {
         <CardBody>
           <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="sm:col-span-2">
-              <Input label="Title" error={errors.title?.message} {...register('title')} />
+              <Input
+                label="Title"
+                disabled={!canEditTask}
+                error={errors.title?.message}
+                {...register('title')}
+              />
             </div>
             <div className="sm:col-span-2">
               <Textarea
                 label="Description"
+                disabled={!canEditTask}
                 error={errors.description?.message}
                 {...register('description')}
               />
             </div>
-            <Select label="Status" error={errors.status?.message} {...register('status')}>
+            <Select
+              label="Status"
+              disabled={!canEditTask}
+              error={errors.status?.message}
+              {...register('status')}
+            >
               {Object.values(TaskStatus).map((s) => (
                 <option key={s} value={s}>
                   {enumLabel(s)}
                 </option>
               ))}
             </Select>
-            <Select label="Priority" error={errors.priority?.message} {...register('priority')}>
+            <Select
+              label="Priority"
+              disabled={!canEditTask}
+              error={errors.priority?.message}
+              {...register('priority')}
+            >
               {Object.values(TaskPriority).map((p) => (
                 <option key={p} value={p}>
                   {enumLabel(p)}
@@ -584,12 +619,14 @@ export const TaskDetailPage = () => {
             <Input
               label="Start date"
               type="date"
+              disabled={!canEditTask}
               error={errors.startDate?.message}
               {...register('startDate')}
             />
             <Input
               label="Due date"
               type="date"
+              disabled={!canEditTask}
               error={errors.dueDate?.message}
               {...register('dueDate')}
             />
@@ -597,6 +634,7 @@ export const TaskDetailPage = () => {
               label="Estimated hours"
               type="number"
               min={0}
+              disabled={!canEditTask}
               error={errors.estimatedHours?.message}
               {...register('estimatedHours')}
             />
@@ -604,14 +642,17 @@ export const TaskDetailPage = () => {
               label="Actual hours"
               type="number"
               min={0}
+              disabled={!canEditTask}
               error={errors.actualHours?.message}
               {...register('actualHours')}
             />
-            <div className="sm:col-span-2">
-              <Button type="submit" isLoading={isSubmitting}>
-                Save changes
-              </Button>
-            </div>
+            <RoleGate permission={Permission.TASK_EDIT}>
+              <div className="sm:col-span-2">
+                <Button type="submit" isLoading={isSubmitting}>
+                  Save changes
+                </Button>
+              </div>
+            </RoleGate>
           </form>
         </CardBody>
       </Card>

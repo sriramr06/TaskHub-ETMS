@@ -5,7 +5,7 @@ import { Permission, hasPermission } from '@/lib/constants';
 
 export const useTeamsOptions = () => {
   const { user } = useAuth();
-  const enabled = hasPermission(user?.role, Permission.TEAM_READ);
+  const enabled = hasPermission(user?.permissions, Permission.TEAM_READ);
 
   const { data, isLoading } = useQuery({
     queryKey: ['teams', 'options'],
