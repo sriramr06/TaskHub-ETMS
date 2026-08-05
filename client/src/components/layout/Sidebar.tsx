@@ -2,7 +2,9 @@ import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Users, UsersRound, FolderKanban, ListChecks, X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { RoleGate } from '@/components/RoleGate';
-import { Permission, UserRole } from '@/lib/constants';
+import { Logo } from '@/components/layout/Logo';
+import { useAuth } from '@/context/AuthContext';
+import { Permission, UserRole, enumLabel } from '@/lib/constants';
 
 const navItemClasses = ({ isActive }: { isActive: boolean }) =>
   cn(
@@ -42,19 +44,37 @@ const SidebarNav = ({ onNavigate }: { onNavigate?: () => void }) => (
   </nav>
 );
 
-const SidebarBrand = () => (
-  <div className="mb-6 flex items-center gap-2 px-2">
-    <div className="flex size-8 items-center justify-center rounded-lg bg-teal-600 text-sm font-bold text-white">
-      TH
-    </div>
-    <span className="text-lg font-semibold text-slate-900">TaskHub</span>
-  </div>
-);
+// The logo now lives permanently in the Topbar (outside the collapsible
+// sidebar), so this fills the freed-up space at the top of the nav instead.
+const SidebarGreeting = () => {
+  const { user } = useAuth();
+  if (!user) return null;
 
-export const Sidebar = () => (
-  <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-200 bg-surface px-3 py-4 md:flex">
-    <SidebarBrand />
-    <SidebarNav />
+  return (
+    <div className="mb-6 px-2">
+      <p className="text-sm font-semibold text-slate-900">Welcome back, {user.firstName}</p>
+      <p className="text-xs text-slate-500">{enumLabel(user.role)}</p>
+    </div>
+  );
+};
+
+interface SidebarProps {
+  open: boolean;
+}
+
+export const Sidebar = ({ open }: SidebarProps) => (
+  <aside
+    className={cn(
+      'hidden shrink-0 overflow-hidden border-slate-200 bg-surface transition-all duration-200 md:flex',
+      open ? 'w-60 border-r' : 'w-0 border-r-0',
+    )}
+  >
+    {/* Fixed-width inner wrapper so the nav never reflows as the <aside>
+        animates — the outer overflow-hidden just reveals/clips it. */}
+    <div className="flex w-60 shrink-0 flex-col px-3 py-4">
+      <SidebarGreeting />
+      <SidebarNav />
+    </div>
   </aside>
 );
 
@@ -71,7 +91,7 @@ export const MobileSidebar = ({ open, onClose }: MobileSidebarProps) => {
       <div className="fixed inset-0 bg-black/50" onClick={onClose} aria-hidden="true" />
       <div className="relative flex h-full w-72 max-w-[80vw] flex-col border-r border-slate-200 bg-surface px-3 py-4 shadow-xl">
         <div className="mb-2 flex items-center justify-between">
-          <SidebarBrand />
+          <Logo />
           <button
             type="button"
             onClick={onClose}
@@ -81,6 +101,7 @@ export const MobileSidebar = ({ open, onClose }: MobileSidebarProps) => {
             <X className="size-5" />
           </button>
         </div>
+        <SidebarGreeting />
         <SidebarNav onNavigate={onClose} />
       </div>
     </div>

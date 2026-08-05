@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
@@ -45,53 +45,30 @@ const COLUMNS: TaskStatus[] = [
   TaskStatus.BLOCKED,
 ];
 
-const TaskCard = ({ task }: { task: Task }) => {
-  const queryClient = useQueryClient();
-
-  const statusMutation = useMutation({
-    mutationFn: (status: string) => tasksApi.updateTask(task._id, { status }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tasks'] }),
-    onError: (error) => toast.error(getErrorMessage(error)),
-  });
-
-  return (
-    <Card className="flex flex-col gap-2 p-3">
-      <Link
-        to={`/tasks/${task._id}`}
-        className="text-sm font-medium text-slate-800 hover:text-teal-600"
-      >
-        {task.title}
-      </Link>
-      <p className="text-xs text-slate-500">{task.project.name}</p>
-      <div className="flex items-center justify-between">
-        <Badge tone={statusTone(task.priority)}>{enumLabel(task.priority)}</Badge>
-        <div className="flex -space-x-2">
-          {task.assignees.slice(0, 3).map((a) => (
-            <Avatar
-              key={a._id}
-              name={`${a.firstName} ${a.lastName}`}
-              src={a.avatar}
-              className="size-6 border-2 border-white text-[10px]"
-            />
-          ))}
-        </div>
+const TaskCard = ({ task }: { task: Task }) => (
+  <Card className="flex flex-col gap-2 p-3">
+    <Link
+      to={`/tasks/${task._id}`}
+      className="line-clamp-2 text-sm font-medium text-slate-800 hover:text-teal-600"
+    >
+      {task.title}
+    </Link>
+    <p className="truncate text-xs text-slate-500">{task.project.name}</p>
+    <div className="flex items-center justify-between">
+      <Badge tone={statusTone(task.priority)}>{enumLabel(task.priority)}</Badge>
+      <div className="flex -space-x-2">
+        {task.assignees.slice(0, 3).map((a) => (
+          <Avatar
+            key={a._id}
+            name={`${a.firstName} ${a.lastName}`}
+            src={a.avatar}
+            className="size-6 border-2 border-white text-[10px]"
+          />
+        ))}
       </div>
-      <RoleGate permission={Permission.TASK_EDIT}>
-        <Select
-          value={task.status}
-          onChange={(e) => statusMutation.mutate(e.target.value)}
-          className="mt-1 py-1 text-xs"
-        >
-          {COLUMNS.map((s) => (
-            <option key={s} value={s}>
-              {enumLabel(s)}
-            </option>
-          ))}
-        </Select>
-      </RoleGate>
-    </Card>
-  );
-};
+    </div>
+  </Card>
+);
 
 export const TasksListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -157,9 +134,9 @@ export const TasksListPage = () => {
         ))}
       </Select>
 
-      <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
+      <div className="flex gap-4 overflow-x-auto pb-2">
         {COLUMNS.map((status) => (
-          <div key={status} className="flex min-w-[240px] flex-col gap-3">
+          <div key={status} className="flex w-64 shrink-0 flex-col gap-3">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-xs font-semibold uppercase text-slate-500">
                 {enumLabel(status)}

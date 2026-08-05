@@ -4,13 +4,15 @@ import { LogOut, UserRound, ChevronDown, Moon, Sun, Menu } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Avatar } from '@/components/ui/Avatar';
-import { enumLabel } from '@/lib/constants';
+import { Logo } from '@/components/layout/Logo';
 
 interface TopbarProps {
   onOpenMenu: () => void;
+  sidebarOpen: boolean;
+  onToggleSidebar: () => void;
 }
 
-export const Topbar = ({ onOpenMenu }: TopbarProps) => {
+export const Topbar = ({ onOpenMenu, sidebarOpen, onToggleSidebar }: TopbarProps) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ export const Topbar = ({ onOpenMenu }: TopbarProps) => {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-surface px-3 md:px-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onOpenMenu}
@@ -36,10 +38,16 @@ export const Topbar = ({ onOpenMenu }: TopbarProps) => {
         >
           <Menu className="size-5" />
         </button>
-        <div>
-          <p className="text-sm font-semibold text-slate-900">Welcome back, {user.firstName}</p>
-          <p className="hidden text-xs text-slate-500 sm:block">{enumLabel(user.role)}</p>
-        </div>
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          className="hidden rounded-lg p-2 text-slate-500 hover:bg-slate-100 md:flex"
+          aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          <Menu className="size-5" />
+        </button>
+        <Logo />
       </div>
 
       <div className="flex items-center gap-1 md:gap-2">
