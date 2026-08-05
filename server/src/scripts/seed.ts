@@ -1,10 +1,12 @@
 import mongoose, { Types } from 'mongoose';
 import { connectDB } from '@/config/database';
 import { User } from '@/models/User';
+import { Employee } from '@/models/Employee';
 import { Team } from '@/models/Team';
 import { Project } from '@/models/Project';
 import { Task } from '@/models/Task';
 import { UserRole, UserStatus } from '@/constants/enums/user';
+import { EmploymentType, EmploymentStatus } from '@/constants/enums/employee';
 import { TeamRole } from '@/constants/enums/team';
 import { ProjectStatus } from '@/constants/enums/project';
 import { TaskStatus, TaskPriority, TaskLabel } from '@/constants/enums/task';
@@ -47,6 +49,121 @@ export const SEED_USERS: SeedUser[] = [
   { email: 'ethan.silva@taskhub.dev', firstName: 'Ethan', lastName: 'Silva', role: UserRole.MEMBER },
   { email: 'mia.alvarez@taskhub.dev', firstName: 'Mia', lastName: 'Alvarez', role: UserRole.MEMBER },
   { email: 'owen.baxter@taskhub.dev', firstName: 'Owen', lastName: 'Baxter', role: UserRole.GUEST },
+];
+
+interface SeedEmployee {
+  email: string;
+  department: string;
+  designation: string;
+  employmentType: EmploymentType;
+  employmentStatus: EmploymentStatus;
+  joiningDaysAgo: number;
+  skills: string[];
+}
+
+// Owen Baxter (guest/external contractor) is deliberately left out — not
+// every user has an HR record, and the People page's "not linked yet" state
+// needs at least one real example to demonstrate.
+const SEED_EMPLOYEES: SeedEmployee[] = [
+  {
+    email: 'ava.whitfield@taskhub.dev',
+    department: 'Executive',
+    designation: 'Head of Product & Engineering',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 1100,
+    skills: ['Leadership', 'Product Strategy', 'Systems Architecture'],
+  },
+  {
+    email: 'marcus.chen@taskhub.dev',
+    department: 'Engineering',
+    designation: 'Engineering Manager',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 900,
+    skills: ['Engineering Management', 'Node.js', 'System Design'],
+  },
+  {
+    email: 'priya.kapoor@taskhub.dev',
+    department: 'Design',
+    designation: 'Design Manager',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 760,
+    skills: ['Design Leadership', 'Design Systems', 'User Research'],
+  },
+  {
+    email: 'sofia.novak@taskhub.dev',
+    department: 'Engineering',
+    designation: 'Team Lead, Platform Engineering',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 730,
+    skills: ['TypeScript', 'React', 'Node.js', 'Mentoring'],
+  },
+  {
+    email: 'daniel.osei@taskhub.dev',
+    department: 'Design',
+    designation: 'Team Lead, Product Design',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 550,
+    skills: ['Figma', 'Design Systems', 'Prototyping'],
+  },
+  {
+    email: 'liam.brooks@taskhub.dev',
+    department: 'Engineering',
+    designation: 'Software Engineer',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 365,
+    skills: ['React', 'TypeScript', 'REST APIs'],
+  },
+  {
+    email: 'noah.kim@taskhub.dev',
+    department: 'Engineering',
+    designation: 'Backend Engineer',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.PROBATION,
+    joiningDaysAgo: 60,
+    skills: ['Node.js', 'MongoDB', 'Express'],
+  },
+  {
+    email: 'ethan.silva@taskhub.dev',
+    department: 'Engineering',
+    designation: 'Software Engineer',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 300,
+    skills: ['Node.js', 'PostgreSQL', 'Docker'],
+  },
+  {
+    email: 'emma.torres@taskhub.dev',
+    department: 'Design',
+    designation: 'Product Designer',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 400,
+    skills: ['Figma', 'Prototyping', 'User Research'],
+  },
+  {
+    email: 'grace.lin@taskhub.dev',
+    department: 'Design',
+    designation: 'UX Writer',
+    employmentType: EmploymentType.FULL_TIME,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 240,
+    skills: ['UX Writing', 'Content Strategy'],
+  },
+  {
+    email: 'mia.alvarez@taskhub.dev',
+    department: 'Marketing',
+    designation: 'Marketing Designer',
+    employmentType: EmploymentType.CONTRACT,
+    employmentStatus: EmploymentStatus.ACTIVE,
+    joiningDaysAgo: 120,
+    skills: ['Graphic Design', 'Branding', 'Figma'],
+  },
 ];
 
 interface SeedTeam {
@@ -451,6 +568,30 @@ const seedUsers = async (): Promise<Map<string, Types.ObjectId>> => {
   return usersByEmail;
 };
 
+const seedEmployees = async (usersByEmail: Map<string, Types.ObjectId>): Promise<void> => {
+  for (const seedEmployee of SEED_EMPLOYEES) {
+    const userId = usersByEmail.get(seedEmployee.email);
+    if (!userId) continue;
+
+    const existing = await Employee.findOne({ user: userId });
+    if (existing) {
+      logger.info(`Skipping employee record for ${seedEmployee.email} (already exists).`);
+      continue;
+    }
+
+    await Employee.create({
+      user: userId,
+      department: seedEmployee.department,
+      designation: seedEmployee.designation,
+      employmentType: seedEmployee.employmentType,
+      employmentStatus: seedEmployee.employmentStatus,
+      joiningDate: daysFromNow(-seedEmployee.joiningDaysAgo),
+      skills: seedEmployee.skills,
+    });
+    logger.info(`Created employee record for ${seedEmployee.email}.`);
+  }
+};
+
 const seedTeams = async (
   usersByEmail: Map<string, Types.ObjectId>,
 ): Promise<Map<string, Types.ObjectId>> => {
@@ -567,6 +708,7 @@ const seed = async (): Promise<void> => {
   await connectDB();
 
   const usersByEmail = await seedUsers();
+  await seedEmployees(usersByEmail);
   const teamsByName = await seedTeams(usersByEmail);
   await seedProjectsAndTasks(usersByEmail, teamsByName);
 
