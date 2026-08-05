@@ -17,16 +17,17 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-// Matches server/src/scripts/seed.ts — run `npm run seed` in server/ to
-// create these. Dev-only: this section never renders in a production
-// build (import.meta.env.DEV is stripped at build time).
-const DEMO_PASSWORD = 'Demo1234!';
+// One exemplar per role from server/src/scripts/seed.ts's SEED_USERS — run
+// `npm run seed` in server/ to create them. Dev-only: this section never
+// renders in a production build (import.meta.env.DEV is stripped at build
+// time).
+const DEMO_PASSWORD = 'TaskHub@123';
 const DEMO_ACCOUNTS: { email: string; role: UserRole }[] = [
-  { email: 'demo-admin@taskhub.local', role: UserRole.ADMIN },
-  { email: 'demo-manager@taskhub.local', role: UserRole.MANAGER },
-  { email: 'demo-teamlead@taskhub.local', role: UserRole.TEAMLEAD },
-  { email: 'demo-member@taskhub.local', role: UserRole.MEMBER },
-  { email: 'demo-guest@taskhub.local', role: UserRole.GUEST },
+  { email: 'ava.whitfield@taskhub.dev', role: UserRole.ADMIN },
+  { email: 'marcus.chen@taskhub.dev', role: UserRole.MANAGER },
+  { email: 'sofia.novak@taskhub.dev', role: UserRole.TEAMLEAD },
+  { email: 'liam.brooks@taskhub.dev', role: UserRole.MEMBER },
+  { email: 'owen.baxter@taskhub.dev', role: UserRole.GUEST },
 ];
 
 export const LoginPage = () => {
@@ -116,7 +117,7 @@ export const LoginPage = () => {
             <p className="mb-3 text-center text-xs font-medium uppercase tracking-wide text-slate-400">
               Dev quick login
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
               {DEMO_ACCOUNTS.map((account) => (
                 <Button
                   key={account.role}
@@ -126,7 +127,6 @@ export const LoginPage = () => {
                   isLoading={quickLoginRole === account.role}
                   disabled={quickLoginRole !== null && quickLoginRole !== account.role}
                   onClick={() => onQuickLogin(account)}
-                  className="justify-center"
                 >
                   {enumLabel(account.role)}
                 </Button>
